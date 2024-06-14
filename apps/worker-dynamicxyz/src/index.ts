@@ -4,6 +4,7 @@ import { getUserByEmail, createUser, database } from "@repo/database";
 import { Webhooks } from "@octokit/webhooks"
 import { WebhookPayload } from 'types';
 
+// .dev.vars for dev and cloudflare dashboard for prod
 type Bindings = {
   DATABASE_URL: string
   DYNAMICXYZ_WEBHOOK_SECRET_USER_CREATED: string
@@ -17,10 +18,7 @@ app.post('/user/create', async (c) => {
   try {
     // validate webhook signature
     const signature = c.req.header("x-dynamic-signature-256");
-    console.log("bodyData1")
     const bodyData = await c.req.json();
-    console.log("bodyData2")
-    console.log(bodyData)
 
     const webhooks = new Webhooks({
       secret: c.env.DYNAMICXYZ_WEBHOOK_SECRET_USER_CREATED,
@@ -42,26 +40,25 @@ app.post('/user/create', async (c) => {
       return new Response("Invalid event", { status: 400 });
     }
 
-    if (bodyData.email === undefined) {
+    const email = bodyData.data.email;
+    if (email === undefined) {
       return new Response("Email is required", { status: 400 });
     }
 
-    console.log("passed everything")
-
     const db = database(c.env.DATABASE_URL);
   
-    const user = await getUserByEmail(db, bodyData.email);
+    const user = await getUserByEmail(db, email);
     if (user.length > 0) {
       return new Response(
         JSON.stringify({
           success: false,
           message: "User already exists",
         }),
-        { status: 400 }
+        { status: 402 }
       );
     }
   
-    await createUser(db, bodyData.email);
+    await createUser(db, email);
   
     return new Response(
       JSON.stringify({
@@ -71,7 +68,7 @@ app.post('/user/create', async (c) => {
       { status: 200 }
     );
   } catch (e) {
-    return new Response(e.message, { status: 400 });
+    return new Response(e.message, { status: 500 });
   }
 });
 

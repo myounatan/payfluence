@@ -12,3 +12,8 @@ server/dist
 public/dist
 
 packages/contracts/cache
+
+# cloudflare
+.dev.vars
+.staging.vars
+.stage.vars
