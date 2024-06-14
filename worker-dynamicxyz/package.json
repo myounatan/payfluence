@@ -1,0 +1,23 @@
+{
+	"name": "cloudflare-workers-openapi",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"cf-typegen": "wrangler types"
+	},
+	"dependencies": {
+		"@octokit/webhooks": "^13.2.7",
+		"@repo/database": "workspace:*",
+		"hono": "^4.4.6",
+		"yup": "^1.4.0"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20240605.0",
+		"@types/node": "^20.5.7",
+		"@types/service-worker-mock": "^2.0.1",
+		"wrangler": "^3.0.0"
+	}
+}
