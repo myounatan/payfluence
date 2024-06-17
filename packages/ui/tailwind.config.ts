@@ -56,8 +56,14 @@ const config = {
         },
 
         // CUSTOM
-        "highlight-primary": "var(--highlight-primary)", // hex colours so we dont need the "hsl" function
-        "highlight-secondary": "var(--highlight-secondary)",
+        "highlight-primary": {
+          DEFAULT: "var(--highlight-primary)", // hex colours so we dont need the "hsl" function
+          foreground: "var(--highlight-primary-foreground)",
+        },
+        "highlight-secondary": {
+          DEFAULT: "var(--highlight-secondary)",
+          foreground: "var(--highlight-secondary-foreground)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -35,7 +35,10 @@
     --radius: 0.5rem;
 
     --highlight-primary: #818CF8;
+    --highlight-primary-foreground: #97A1FD;
+
     --highlight-secondary: #C89DFF;
+    --highlight-secondary-foreground: #D9B3FF;
   }
 
   .dark {

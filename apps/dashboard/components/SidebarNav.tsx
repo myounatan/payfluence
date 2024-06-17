@@ -2,7 +2,8 @@
 import { Icons } from "@repo/ui/components/icons";
 import { Button } from "@repo/ui/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@repo/ui/components/ui/card";
-import { Coins, Key, PlusCircleIcon, Settings } from "lucide-react";
+import { cn } from "@ui/lib/utils";
+import { ChevronDown, Coins, Key, PlusCircleIcon, Settings } from "lucide-react";
 import Link from "next/link";
 
 export interface SidebarNavProps {
@@ -10,13 +11,27 @@ export interface SidebarNavProps {
   activeSubMenu?: string
 }
 
+function inactiveMenuClasses() {
+  return "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+}
+
+function activeMenuClasses() {
+  return "flex items-center gap-3 rounded-lg bg-slate-700 px-3 py-2 text-slate-50 transition-all hover:text-slate-50"
+}
+
+function activeSubMenuClasses() {
+  return "flex items-center gap-3 rounded-lg px-3 py-2 text-highlight-primary transition-all"
+}
+
+
+
 export default function SidebarNav({ activeMenu, activeSubMenu }: SidebarNavProps) {
   return (
     <div className="grid min-h-screen w-full grid-cols-[220px_1fr] lg:grid-cols-[220px_1fr] bg-slate-100">
       <div className="hidden border-r bg-slate-50 md:block border-slate-200">
         <div className="flex h-full max-h-screen flex-col">
           <div className="flex h-14 items-center px-4 lg:h-[60px] lg:px-6 justify-center">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
+            <Link href="/engines" className="flex items-center gap-2 font-semibold">
               <Icons.payfluence className="h-24 w-24" />
             </Link>
             {/* <Button variant="outline" size="icon" className="ml-auto h-8 w-8">
@@ -26,13 +41,9 @@ export default function SidebarNav({ activeMenu, activeSubMenu }: SidebarNavProp
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              <Button className="flex items-center gap-2" variant="highlight-primary">
-                <PlusCircleIcon className="h-4 w-4" />
-                New Tip Engine
-              </Button>
               <Link
-                href="#"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                href="/engines"
+                className={cn( activeMenu === "engines" ? activeMenuClasses() : inactiveMenuClasses() )}
               >
                 <Coins className="h-4 w-4" />
                 Tip Engines
@@ -48,12 +59,30 @@ export default function SidebarNav({ activeMenu, activeSubMenu }: SidebarNavProp
                 </p>
               </Link>
               <Link
-                href="#"
-                className="flex items-center gap-3 rounded-lg bg-slate-700 px-3 py-2 text-slate-50 transition-all hover:text-slate-50"
+                href="/settings"
+                className={cn( activeMenu === "settings" ? activeMenuClasses() : inactiveMenuClasses() )}
               >
                 <Settings className="h-4 w-4" />
                 Settings{" "}
+                <ChevronDown className={cn("h-4 w-4 ml-auto transform", `${activeMenu === "settings" ? "rotate-180" : "rotate-0"}`)} />
               </Link>
+              {/* settings sub menu */}
+              {activeMenu === "settings" && (
+                <div className="grid grid-cols-1 gap-1.5 ml-6 mt-2">
+                  <Link
+                    href="#"
+                    className={cn( activeSubMenu === "profile" ? activeSubMenuClasses() : inactiveMenuClasses() )}
+                  >
+                    Profile
+                  </Link>
+                  <Link
+                    href="#"
+                    className={cn( activeSubMenu === "billing" ? activeSubMenuClasses() : inactiveMenuClasses() )}
+                  >
+                    Billing
+                  </Link>
+                </div>
+              )}
             </nav>
           </div>
           <div className="mt-auto p-4">

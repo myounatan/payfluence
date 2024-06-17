@@ -7,7 +7,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Button } from "@repo/ui/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem } from "@repo/ui/components/ui/dropdown-menu";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@ui/components/ui/card";
-import { ListFilter, PlusCircle, MoreHorizontal, File } from "lucide-react";
+import { ListFilter, PlusCircle, MoreHorizontal, File, Plus, Filter, Info } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -23,6 +23,14 @@ import {
   TableRow,
 } from "@repo/ui/components/ui/table"
 import { Badge } from "@repo/ui/components/ui/badge"
+import Breadcrumbs from "@/components/Breadcrumbs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@ui/components/ui/tooltip";
+import WarningCard from "@/components/WarningCard";
+
+const breadcrumbLinks = [
+  // { route: "#", label: "Dashboard" },
+  { route: "#", label: "Tip Engines" },
+]
 
 export default function TipEngines() {
   return (
@@ -32,25 +40,7 @@ export default function TipEngines() {
 
       <div className="flex flex-col sm:gap-4 sm:py-4">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <Breadcrumb className="hidden md:flex">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="#">Dashboard</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="#">Products</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>All Products</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <Breadcrumbs links={breadcrumbLinks} />
           <div className="relative ml-auto flex-1 md:grow-0">
             {/* <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -101,8 +91,8 @@ export default function TipEngines() {
               <div className="ml-auto flex items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 gap-1">
-                      <ListFilter className="h-3.5 w-3.5" />
+                    <Button variant="outline" size="xs">
+                      <Filter className="h-3.5 w-3.5" />
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                         Filter
                       </span>
@@ -120,16 +110,16 @@ export default function TipEngines() {
                     </DropdownMenuCheckboxItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <Button size="sm" variant="outline" className="h-8 gap-1">
+                {/* <Button size="sm" variant="outline" className="h-8 gap-1">
                   <File className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     Export
                   </span>
-                </Button>
-                <Button size="sm" className="h-8 gap-1">
-                  <PlusCircle className="h-3.5 w-3.5" />
+                </Button> */}
+                <Button variant="highlight-primary">
+                  <Plus className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add Product
+                    New Tip Engine
                   </span>
                 </Button>
               </div>
@@ -137,12 +127,15 @@ export default function TipEngines() {
             <TabsContent value="all">
               <Card x-chunk="dashboard-06-chunk-0">
                 <CardHeader>
-                  <CardTitle>Products</CardTitle>
+                  <CardTitle>Tip Engines</CardTitle>
                   <CardDescription>
-                    Manage your products and view their sales performance.
+                    Manage your tip engines and their performance.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+                  <WarningCard variant="warn" title="Tip Engine Limit" tooltip="Your plan has a maximum of 1 active engine.">
+                    You have reached your limit of <b>1/1 engine(s)</b>, you can <Link className="underline font-bold" href="#">upgrade now</Link> to deploy more active engines!
+                  </WarningCard>
                   <Table>
                     <TableHeader>
                       <TableRow>
