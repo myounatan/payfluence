@@ -2,11 +2,11 @@ import { Hono } from 'hono'
 
 import { getUserByEmail, createUser, database } from "@repo/database";
 import { Webhooks } from "@octokit/webhooks"
-import { WebhookPayload } from 'types';
+import { WebhookSchema } from 'types';
 
 // .dev.vars for dev and cloudflare dashboard for prod
 type Bindings = {
-  DATABASE_URL: string
+  DATABASE_URL_STAGING: string
   DYNAMICXYZ_WEBHOOK_SECRET_USER_CREATED: string
 }
 
@@ -29,7 +29,7 @@ app.post('/user/create', async (c) => {
     }
 
     // validate body schema
-    await WebhookPayload.validate(bodyData); 
+    await WebhookSchema.validate(bodyData); 
 
     // check if ping event
     if (bodyData.eventName === "ping") {
@@ -45,7 +45,7 @@ app.post('/user/create', async (c) => {
       return new Response("Email is required", { status: 400 });
     }
 
-    const db = database(c.env.DATABASE_URL);
+    const db = database(c.env.DATABASE_URL_STAGING);
   
     const user = await getUserByEmail(db, email);
     if (user.length > 0) {

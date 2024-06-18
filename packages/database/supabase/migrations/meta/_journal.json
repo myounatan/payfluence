@@ -8,6 +8,20 @@
       "when": 1718234990441,
       "tag": "0000_clammy_mephisto",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1718682701855,
+      "tag": "0001_demonic_the_leader",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1718685941955,
+      "tag": "0002_perpetual_dracula",
+      "breakpoints": true
     }
   ]
 }

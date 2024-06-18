@@ -10,6 +10,11 @@ export const FeatureFlags = pgTable('feature_flags', {
   value: text('value').notNull(),
 });
 
+export const ProductIdSubscriptionTierMap = pgTable('product_id_subscription_tier_map', {
+  id: text('id').primaryKey(), // product id
+  subscriptionTier: integer('subscription_tier').notNull(),
+});
+
 export const Users = pgTable('users', {
   id: serial('id').primaryKey(),
 
@@ -17,6 +22,8 @@ export const Users = pgTable('users', {
 
   isSubscribed: boolean('is_subscribed').default(false),
   subscriptionTier: integer('subscription_tier').default(0),
+  subscriptionProductId: text('subscription_product_id'),
+  subscriptionExpiresAt: timestamp('subscription_expires_at'),
 
   createdAt: timestamp('created_at').default(sql`now()`),
   updatedAt: timestamp('updated_at').default(sql`now()`),
