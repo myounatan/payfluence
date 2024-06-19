@@ -4,6 +4,8 @@ import { Users, TipEngines, Airdrops } from './schema';
 export type User = InferSelectModel<typeof Users>;
 export type NewUser = InferInsertModel<typeof Users>;
 
+export interface UserSubscriptionParams extends Pick<NewUser, 'isSubscribed' | 'subscriptionTier' | 'subscriptionProductId' | 'subscriptionExpiresAt'> {}
+
 export type TipEngine = InferSelectModel<typeof TipEngines>;
 export type NewTipEngine = InferInsertModel<typeof TipEngines>;
 

@@ -1,5 +1,5 @@
 {
-  "id": "9db36674-0621-43ab-99a6-48784b0b3c15",
+  "id": "59e6fa32-f688-4dd3-989d-02e0dac4512a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -107,6 +107,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "start_date": {
+          "name": "start_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
         "claim_date": {
           "name": "claim_date",
           "type": "timestamp",
@@ -117,28 +123,32 @@
           "name": "points_to_token_ratio",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false,
+          "default": 1
         },
         "min_tokens": {
           "name": "min_tokens",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false,
+          "default": 0
         },
         "min_tokens_duration": {
           "name": "min_tokens_duration",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false,
+          "default": 0
         },
         "min_casts": {
           "name": "min_casts",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false,
+          "default": 0
         },
-        "require_account_created_before_tip_engine": {
-          "name": "require_account_created_before_tip_engine",
+        "require_legacy_account": {
+          "name": "require_legacy_account",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
@@ -205,6 +215,73 @@
           ]
         }
       }
+    },
+    "public.product_id_subscription_tier_map": {
+      "name": "product_id_subscription_tier_map",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "subscription_tier": {
+          "name": "subscription_tier",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.restricted_tip_strings": {
+      "name": "restricted_tip_strings",
+      "schema": "",
+      "columns": {
+        "tip_string": {
+          "name": "tip_string",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "restricted": {
+          "name": "restricted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.subscription_tier_features": {
+      "name": "subscription_tier_features",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "feature_json": {
+          "name": "feature_json",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     },
     "public.tip_engine": {
       "name": "tip_engine",
@@ -372,6 +449,18 @@
           "primaryKey": false,
           "notNull": false,
           "default": 0
+        },
+        "subscription_product_id": {
+          "name": "subscription_product_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subscription_expires_at": {
+          "name": "subscription_expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",

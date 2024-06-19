@@ -2,7 +2,7 @@ import * as yup from 'yup';
 
 // Ping data
 
-const PingData = yup.object({
+const PingSchema = yup.object({
   webhookId: yup.string().uuid().required(),
   message: yup.string().required(),
   events: yup.array().of(yup.string()).required(),
@@ -12,7 +12,7 @@ const PingData = yup.object({
 
 // User created data (make everything optional except id (aka do not add required)
 
-const UserCreatedData = yup.object({
+const UserCreatedSchema = yup.object({
   missingFields: yup.array().of(yup.string()),
   lastVerifiedCredentialId: yup.string().uuid(),
   metadata: yup.object(),
@@ -37,17 +37,17 @@ const UserCreatedData = yup.object({
 
 // General payload for webhook
 
-export const WebhookPayload = yup.object({
+export const WebhookSchema = yup.object({
   eventId: yup.string().uuid().required(),
   webhookId: yup.string().uuid().required(),
   environmentId: yup.string().uuid().required(),
   data: yup.mixed().test('is-valid-data', 'Invalid data', value => {
     try {
-      UserCreatedData.validateSync(value);
+      UserCreatedSchema.validateSync(value);
       return true;
     } catch (error) {
       try {
-        PingData.validateSync(value);
+        PingSchema.validateSync(value);
         return true;
       } catch (error) {
         return false;

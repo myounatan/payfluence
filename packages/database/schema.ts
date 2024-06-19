@@ -1,6 +1,6 @@
 import { relations, sql } from 'drizzle-orm';
 
-import { integer, pgTable, serial, text, timestamp, boolean, bigint, pgEnum } from 'drizzle-orm/pg-core';
+import { integer, pgTable, serial, text, timestamp, boolean, bigint, pgEnum, json } from 'drizzle-orm/pg-core';
 
 
 export const FeatureFlags = pgTable('feature_flags', {
@@ -10,6 +10,22 @@ export const FeatureFlags = pgTable('feature_flags', {
   value: text('value').notNull(),
 });
 
+export const ProductIdSubscriptionTierMap = pgTable('product_id_subscription_tier_map', {
+  id: text('id').primaryKey(), // product id
+  subscriptionTier: integer('subscription_tier').notNull(),
+});
+
+export const SubscriptionTierFeatures = pgTable('subscription_tier_features', {
+  id: integer('id').primaryKey(), // subscription tier integer
+  features: json('feature_json').notNull(), // anything ?
+  // current format: { "numTipEngines": 3, "royalty": 2.5 }
+});
+
+export const RestrictedTipStrings = pgTable('restricted_tip_strings', {
+  id: text('tip_string').primaryKey(),
+  restricted: boolean('restricted').default(true),
+});
+
 export const Users = pgTable('users', {
   id: serial('id').primaryKey(),
 
@@ -17,6 +33,8 @@ export const Users = pgTable('users', {
 
   isSubscribed: boolean('is_subscribed').default(false),
   subscriptionTier: integer('subscription_tier').default(0),
+  subscriptionProductId: text('subscription_product_id'),
+  subscriptionExpiresAt: timestamp('subscription_expires_at'),
 
   createdAt: timestamp('created_at').default(sql`now()`),
   updatedAt: timestamp('updated_at').default(sql`now()`),
@@ -76,19 +94,20 @@ export const Airdrops = pgTable('airdrop', {
   // tip engine owns an airdrop
   tipEngineId: text('tip_engine_id').notNull(),
 
-  tokenAmount: bigint('token_amount', { mode: 'bigint' }).notNull(),
+  tokenAmount: bigint('token_amount', { mode: 'bigint' }).notNull(), // not really in use?
 
+  startDate: timestamp('start_date').notNull(),
   claimDate: timestamp('claim_date').notNull(),
 
-  pointsToTokenRatio: integer('points_to_token_ratio').notNull(),
+  pointsToTokenRatio: integer('points_to_token_ratio').default(1),
 
   // user must hold a minimum amount of tokens for a minimum duration to be eligible
-  minTokens: integer('min_tokens').notNull(),
-  minTokensDuration: integer('min_tokens_duration').notNull(),
+  minTokens: integer('min_tokens').default(0),
+  minTokensDuration: integer('min_tokens_duration').default(0),
 
-  minCasts: integer('min_casts').notNull(),
+  minCasts: integer('min_casts').default(0),
 
-  requireAccountCreatedBeforeTipEngine: boolean('require_account_created_before_tip_engine').default(false),
+  requireLegacyAccount: boolean('require_legacy_account').default(false),
 
   // a POST request to a custom API must return a response, if 200, then the user is eligible
   customAPIRequirement: text('custom_api_requirement'),
