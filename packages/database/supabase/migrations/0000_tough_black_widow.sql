@@ -22,12 +22,13 @@ CREATE TABLE IF NOT EXISTS "airdrop" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"tip_engine_id" text NOT NULL,
 	"token_amount" bigint NOT NULL,
+	"start_date" timestamp NOT NULL,
 	"claim_date" timestamp NOT NULL,
-	"points_to_token_ratio" integer NOT NULL,
-	"min_tokens" integer NOT NULL,
-	"min_tokens_duration" integer NOT NULL,
-	"min_casts" integer NOT NULL,
-	"require_account_created_before_tip_engine" boolean DEFAULT false,
+	"points_to_token_ratio" integer DEFAULT 1,
+	"min_tokens" integer DEFAULT 0,
+	"min_tokens_duration" integer DEFAULT 0,
+	"min_casts" integer DEFAULT 0,
+	"require_legacy_account" boolean DEFAULT false,
 	"custom_api_requirement" text,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
@@ -38,6 +39,21 @@ CREATE TABLE IF NOT EXISTS "feature_flags" (
 	"key" text NOT NULL,
 	"value" text NOT NULL,
 	CONSTRAINT "feature_flags_key_unique" UNIQUE("key")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "product_id_subscription_tier_map" (
+	"id" text PRIMARY KEY NOT NULL,
+	"subscription_tier" integer NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "restricted_tip_strings" (
+	"tip_string" text PRIMARY KEY NOT NULL,
+	"restricted" boolean DEFAULT true
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "subscription_tier_features" (
+	"id" integer PRIMARY KEY NOT NULL,
+	"feature_json" json NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tip_engine" (
@@ -69,6 +85,8 @@ CREATE TABLE IF NOT EXISTS "users" (
 	"email" text NOT NULL,
 	"is_subscribed" boolean DEFAULT false,
 	"subscription_tier" integer DEFAULT 0,
+	"subscription_product_id" text,
+	"subscription_expires_at" timestamp,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now(),
 	CONSTRAINT "users_email_unique" UNIQUE("email")
