@@ -5,7 +5,7 @@ import { Info } from "lucide-react"
 
 export interface WarningCardProps {
   title: string
-  tooltip: string
+  tooltip?: string
   description?: string
   variant: "warn" | "error" | "success" | "info"
   children?: React.ReactNode
@@ -30,6 +30,7 @@ export default function WarningCard({ title, tooltip, description, variant, chil
       <CardContent className="p-3">
         <p className="text-xs flex w-full justify-start items-center text-slate-500">
           <b>{title}</b>
+          {tooltip &&
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -39,7 +40,7 @@ export default function WarningCard({ title, tooltip, description, variant, chil
                 <p>{tooltip}</p>
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider>
+          </TooltipProvider>}
         </p>
         <p className="text-xs text-slate-500 mb-0">
           {description ? description : children}

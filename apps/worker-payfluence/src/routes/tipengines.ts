@@ -43,26 +43,6 @@ tipEnginesRoute.post('/:id/setpublish', async (c) => {
   }
 });
 
-// create airdrop signatures
-tipEnginesRoute.post('/:id/createsignatures', async (c) => {
-  try {
-    const { id } = c.req.param();
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "User found",
-        data: {
-          
-        }
-      }),
-      { status: 200 }
-    );
-  } catch (e) {
-    return new Response(e.message, { status: 500 });
-  }
-});
-
 // create tip engine
 tipEnginesRoute.post('/create', async (c) => {
   try {

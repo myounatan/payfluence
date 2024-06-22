@@ -165,7 +165,7 @@ export const AirdropParticipants = pgTable('airdrop_participant', {
 
   // signature holds airdrop/tip engine owner confirmation signature, receiver address, airdrop id, and claimable amount
   // which is signed by payfluence backend admin wallet
-  signature: text('signature').notNull().unique(),
+  signature: text('signature').unique(),
   claimableAmount: bigint('claimable_amount', { mode: 'bigint' }).notNull(),
 
   claimed: boolean('claimed').default(false),

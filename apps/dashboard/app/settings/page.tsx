@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@repo/ui/components/ui/table"
 import { Badge } from "@repo/ui/components/ui/badge"
-import Breadcrumbs from "@/components/Breadcrumbs";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@ui/components/ui/tooltip";
 import WarningCard from "@/components/WarningCard";
 
