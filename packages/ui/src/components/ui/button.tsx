@@ -20,7 +20,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline gap-1",
 
         // CUSTOM
-        "highlight-primary": "bg-highlight-primary text-slate-50 hover:bg-highlight-primary-foreground gap-1",
+        "highlight-primary": "bg-highlight-primary text-slate-50 hover:bg-highlight-secondary gap-1",
       },
       size: {
         default: "h-10 px-4 py-2",

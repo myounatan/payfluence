@@ -1,14 +1,16 @@
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@ui/components/ui/breadcrumb"
 import Link from "next/link"
 
+export type BreadcrumbLinks = {
+  route: string
+  label: string
+}[]
+
 export interface BreadcrumbsProps {
-  links: {
-    route: string
-    label: string
-  }[]
+  links: BreadcrumbLinks
 }
 
-export default function Breadcrumbs({ links }: BreadcrumbsProps) {
+export function Breadcrumbs({ links }: BreadcrumbsProps) {
 
   if (links.length < 2) {
     return null
