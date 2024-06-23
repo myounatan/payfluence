@@ -64,10 +64,11 @@ export default function SidebarNav({ activeMenu, activeSubMenu }: SidebarNavProp
               >
                 <Settings className="h-4 w-4" />
                 Settings{" "}
-                <ChevronDown className={cn("h-4 w-4 ml-auto transform", `${activeMenu === "settings" ? "rotate-180" : "rotate-0"}`)} />
+                {/* <ChevronDown className={cn("h-4 w-4 ml-auto transform", `${activeMenu === "settings" ? "rotate-180" : "rotate-0"}`)} /> */}
               </Link>
               {/* settings sub menu */}
-              {activeMenu === "settings" && (
+              {activeMenu === "settings"} {/*&& (
+                
                 <div className="grid grid-cols-1 gap-1.5 ml-6 mt-2">
                   <Link
                     href="#"
@@ -82,7 +83,7 @@ export default function SidebarNav({ activeMenu, activeSubMenu }: SidebarNavProp
                     Billing
                   </Link>
                 </div>
-              )}
+              ) */}
             </nav>
           </div>
           <div className="mt-auto p-4">
