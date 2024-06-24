@@ -78,11 +78,15 @@ export const TipEngines = pgTable('tip_engine', {
   // user owns a tip engine
   userId: text('user_id').notNull(),
 
+  chainId: integer('chain_id').notNull(),
+
   webhookId: text('webhook_id').notNull(),
   webhookActive: boolean('webhook_active').default(false),
 
   tokenContract: text('token_contract').notNull(), // address of the token contract we are funding this tip engine with
   tipString: text('tip_string').notNull().unique(), // ex. "$DEGEN", must be unique to differentiate tip engines
+
+  publicTimeline: boolean('public_timeline').default(false),
   
   createdAt: timestamp('created_at').default(sql`now()`),
   updatedAt: timestamp('updated_at').default(sql`now()`),
@@ -97,7 +101,8 @@ export const Airdrops = pgTable('airdrop', {
   tokenAmount: bigint('token_amount', { mode: 'bigint' }).notNull(), // not really in use?
 
   startDate: timestamp('start_date').notNull(),
-  claimDate: timestamp('claim_date').notNull(),
+  claimStartDate: timestamp('claim_start_date').notNull(), // also end date
+  claimEndDate: timestamp('claim_end_date'), // can be null, aka always claimable
 
   pointsToTokenRatio: integer('points_to_token_ratio').default(1),
 
