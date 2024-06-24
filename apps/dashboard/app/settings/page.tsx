@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link"
 import Image from "next/image";
 import SidebarNav from "@/components/SidebarNav";
@@ -94,15 +95,6 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>
 
-// This can come from your database or API.
-const defaultValues: Partial<ProfileFormValues> = {
-  bio: "I own a computer.",
-  urls: [
-    { value: "https://shadcn.com" },
-    { value: "http://twitter.com/shadcn" },
-  ],
-}
-
 export default function Settings() {
 
   const form = useForm<ProfileFormValues>({
@@ -115,6 +107,35 @@ export default function Settings() {
     name: "urls",
     control: form.control,
   })
+
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/lemonsqueezy/products');
+        const data = await response.json();
+        setProducts(data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const handleCheckout = async (productId: string) => {
+    try {
+      const response = await fetch(`/api/lemonsqueezy/checkout?product_id=${productId}`);
+      const { checkout_url } = await response.json();
+      window.location.href = checkout_url;
+    } catch (error) {
+      console.error('Error initiating checkout:', error);
+    }
+  };
 
   function onSubmit(data: ProfileFormValues) {
   {/* toast({
@@ -392,11 +413,12 @@ export default function Settings() {
                         </TableRow>
                       </TableBody>
                   </Table>
+                  <Button type="submit">Manage Subscription</Button>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button type="submit">Manage Subscription</Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-80">
+                    <PopoverContent className="w-500">
                       <div className="grid gap-4">
                         <div className="space-y-2">
                           <h4 className="font-medium leading-none">Dimensions</h4>
