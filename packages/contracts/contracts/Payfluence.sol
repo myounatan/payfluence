@@ -69,7 +69,6 @@ contract Payfluence is
 
   function _verify(
     bytes memory signature,
-    address signer,
     AirdropMessage memory airdropMessage
   ) internal view {
     bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
@@ -83,24 +82,23 @@ contract Payfluence is
     
     address recoveredSigner = ECDSA.recover(digest, signature);
 
-    if (recoveredSigner != signer) {
+    if (recoveredSigner != adminAddress) {
       revert InvalidSigner();
     }
   }
 
   function verify(
       bytes memory signature,
-      address signer,
       AirdropMessage memory airdropMessage
   ) public view {
-    _verify(signature, signer, airdropMessage);
+    _verify(signature, airdropMessage);
   }
 
   function claimAirdrop(
-    AirdropMessage memory airdropMessage,
-    bytes memory signature
+    bytes memory signature,
+    AirdropMessage memory airdropMessage
   ) public nonReentrant {
-    _verify(signature, adminAddress, airdropMessage);
+    _verify(signature, airdropMessage);
 
     if (airdropClaimedAmounts[airdropMessage.airdropId][airdropMessage.recipient] >= airdropMessage.amountClaimable) {
       revert AirdropAlreadyClaimed();

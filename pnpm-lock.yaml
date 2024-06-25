@@ -208,6 +208,9 @@ importers:
       '@metamask/eth-sig-util':
         specifier: ^7.0.2
         version: 7.0.2
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
       ethereumjs-wallet:
         specifier: ^1.0.2
         version: 1.0.2

@@ -113,7 +113,7 @@ export interface PayfluenceInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "claimAirdrop",
-    values: [Payfluence.AirdropMessageStruct, BytesLike]
+    values: [BytesLike, Payfluence.AirdropMessageStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "contractBalance",
@@ -176,7 +176,7 @@ export interface PayfluenceInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "verify",
-    values: [BytesLike, AddressLike, Payfluence.AirdropMessageStruct]
+    values: [BytesLike, Payfluence.AirdropMessageStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawERC20",
@@ -499,7 +499,7 @@ export interface Payfluence extends BaseContract {
   airdropOwners: TypedContractMethod<[airdropId: string], [string], "view">;
 
   claimAirdrop: TypedContractMethod<
-    [airdropMessage: Payfluence.AirdropMessageStruct, signature: BytesLike],
+    [signature: BytesLike, airdropMessage: Payfluence.AirdropMessageStruct],
     [void],
     "nonpayable"
   >;
@@ -592,11 +592,7 @@ export interface Payfluence extends BaseContract {
   >;
 
   verify: TypedContractMethod<
-    [
-      signature: BytesLike,
-      signer: AddressLike,
-      airdropMessage: Payfluence.AirdropMessageStruct
-    ],
+    [signature: BytesLike, airdropMessage: Payfluence.AirdropMessageStruct],
     [void],
     "view"
   >;
@@ -654,7 +650,7 @@ export interface Payfluence extends BaseContract {
   getFunction(
     nameOrSignature: "claimAirdrop"
   ): TypedContractMethod<
-    [airdropMessage: Payfluence.AirdropMessageStruct, signature: BytesLike],
+    [signature: BytesLike, airdropMessage: Payfluence.AirdropMessageStruct],
     [void],
     "nonpayable"
   >;
@@ -750,11 +746,7 @@ export interface Payfluence extends BaseContract {
   getFunction(
     nameOrSignature: "verify"
   ): TypedContractMethod<
-    [
-      signature: BytesLike,
-      signer: AddressLike,
-      airdropMessage: Payfluence.AirdropMessageStruct
-    ],
+    [signature: BytesLike, airdropMessage: Payfluence.AirdropMessageStruct],
     [void],
     "view"
   >;
