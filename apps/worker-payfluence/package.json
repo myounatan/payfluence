@@ -9,7 +9,9 @@
 		"cf-typegen": "wrangler types"
 	},
 	"dependencies": {
+		"@metamask/eth-sig-util": "^7.0.2",
 		"@repo/database": "workspace:*",
+    "@repo/contracts": "workspace:*",
 		"hono": "^4.4.6",
 		"jsonwebtoken": "^9.0.2",
 		"yup": "^1.4.0"

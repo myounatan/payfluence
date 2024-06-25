@@ -5,25 +5,27 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "airdrop_participant" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"airdrop_id" text NOT NULL,
 	"receiver_id" text NOT NULL,
 	"points" integer NOT NULL,
-	"signature" text NOT NULL,
+	"signature" text,
 	"claimable_amount" bigint NOT NULL,
 	"claimed" boolean DEFAULT false,
 	"claimed_at" timestamp,
+	"claimed_transaction_hash" text,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now(),
 	CONSTRAINT "airdrop_participant_signature_unique" UNIQUE("signature")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "airdrop" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tip_engine_id" text NOT NULL,
 	"token_amount" bigint NOT NULL,
 	"start_date" timestamp NOT NULL,
-	"claim_date" timestamp NOT NULL,
+	"claim_start_date" timestamp NOT NULL,
+	"claim_end_date" timestamp,
 	"points_to_token_ratio" integer DEFAULT 1,
 	"min_tokens" integer DEFAULT 0,
 	"min_tokens_duration" integer DEFAULT 0,
@@ -35,7 +37,7 @@ CREATE TABLE IF NOT EXISTS "airdrop" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "feature_flags" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"key" text NOT NULL,
 	"value" text NOT NULL,
 	CONSTRAINT "feature_flags_key_unique" UNIQUE("key")
@@ -57,12 +59,15 @@ CREATE TABLE IF NOT EXISTS "subscription_tier_features" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tip_engine" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" text NOT NULL,
+	"chain_id" integer NOT NULL,
 	"webhook_id" text NOT NULL,
 	"webhook_active" boolean DEFAULT false,
+	"owner_address" text NOT NULL,
 	"token_contract" text NOT NULL,
 	"tip_string" text NOT NULL,
+	"public_timeline" boolean DEFAULT false,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now(),
 	CONSTRAINT "tip_engine_tip_string_unique" UNIQUE("tip_string")
@@ -81,12 +86,13 @@ CREATE TABLE IF NOT EXISTS "tip_post" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "users" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"email" text NOT NULL,
 	"is_subscribed" boolean DEFAULT false,
 	"subscription_tier" integer DEFAULT 0,
 	"subscription_product_id" text,
 	"subscription_expires_at" timestamp,
+	"customer_id" text,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now(),
 	CONSTRAINT "users_email_unique" UNIQUE("email")

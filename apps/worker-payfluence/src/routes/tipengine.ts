@@ -1,10 +1,10 @@
 import { Hono } from 'hono'
 import { Bindings } from 'index';
 
-const tipEnginesRoute = new Hono<{ Bindings: Bindings }>()
+const tipEngineRoute = new Hono<{ Bindings: Bindings }>()
 
 // return full tip engine info + airdrop info
-tipEnginesRoute.get('/:id', async (c) => {
+tipEngineRoute.get('/:id', async (c) => {
   try {
     const { id } = c.req.param();
 
@@ -24,7 +24,7 @@ tipEnginesRoute.get('/:id', async (c) => {
 });
 
 // set tip engine publish status (aka if neynar webhook is published or not)
-tipEnginesRoute.post('/:id/setpublish', async (c) => {
+tipEngineRoute.post('/:id/setpublish', async (c) => {
   try {
     const { id } = c.req.param();
 
@@ -44,7 +44,7 @@ tipEnginesRoute.post('/:id/setpublish', async (c) => {
 });
 
 // create tip engine
-tipEnginesRoute.post('/create', async (c) => {
+tipEngineRoute.post('/create', async (c) => {
   try {
     // url query "publish" boolean
     const { publish } = c.req.query();
@@ -66,4 +66,4 @@ tipEnginesRoute.post('/create', async (c) => {
   }
 });
 
-export default tipEnginesRoute;
+export default tipEngineRoute;

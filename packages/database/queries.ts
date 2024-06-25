@@ -1,6 +1,6 @@
-import { eq } from 'drizzle-orm';
-import { ProductIdSubscriptionTierMap, Users } from './schema';
-import { User, UserSubscriptionParams } from './types';
+import { and, eq } from 'drizzle-orm';
+import { AirdropParticipants, Airdrops, ProductIdSubscriptionTierMap, TipEngines, Users } from './schema';
+import { Airdrop, AirdropParticipant, TipEngine, User, UserSubscriptionParams } from './types';
 import { Database } from './database';
 
 // User queries
@@ -11,8 +11,14 @@ export async function createUser(db: Database, email: string) {
   });
 }
 
-export async function getUserByEmail(db: Database, email: string): Promise<User[]> {
-  return db.select().from(Users).where(eq(Users.email, email));
+export async function getUserByEmail(db: Database, email: string): Promise<User> {
+  const users = await db.select().from(Users).where(eq(Users.email, email));
+
+  if (users.length === 0) {
+    throw new Error(`User with email ${email} not found`);
+  }
+
+  return users[0];
 }
 
 export async function setUserSubscription(
@@ -23,6 +29,57 @@ export async function setUserSubscription(
   await db.update(Users).set({
     ...subscriptionParams,
    }).where(eq(Users.email, email));
+}
+
+// Tip engine queries
+
+export async function getTipEngineById(db: Database, tipEngineId: string): Promise<TipEngine> {
+  const tipEngines = await db.select().from(TipEngines).where(eq(TipEngines.id, tipEngineId));
+
+  if (tipEngines.length === 0) {
+    throw new Error(`Tip engine with id ${tipEngineId} not found`);
+  }
+
+  return tipEngines[0];
+}
+
+export async function getTipEngineByAirdropId(db: Database, airdropId: string): Promise<TipEngine> {
+  const airdrop: Airdrop = await getAirdropById(db, airdropId);
+  const tipEngines = await db.select().from(TipEngines).where(eq(TipEngines.id, airdrop.tipEngineId));
+
+  if (tipEngines.length === 0) {
+    throw new Error(`Tip engine with airdrop id ${airdropId} not found`);
+  }
+
+  return tipEngines[0];
+}
+
+// Airdrop queries
+
+export async function getAirdropById(db: Database, airdropId: string): Promise<Airdrop> {
+  const airdrops = await db.select().from(Airdrops).where(eq(Airdrops.id, airdropId));
+
+  if (airdrops.length === 0) {
+    throw new Error(`Airdrop with id ${airdropId} not found`);
+  }
+
+  return airdrops[0];
+}
+
+export async function getAirdropParticipantByIds(db: Database, airdropId: string, receiverId: string): Promise<AirdropParticipant> {
+  const airdropParticipants = await db.select().from(AirdropParticipants).where(and(eq(AirdropParticipants.id, airdropId), eq(AirdropParticipants.receiverId, receiverId)));
+
+  if (airdropParticipants.length === 0) {
+    throw new Error(`Airdrop participant with airdrop id ${airdropId} and receiver id ${receiverId} not found`);
+  }
+
+  return airdropParticipants[0];
+}
+
+export async function setAirdropParticipantSignature(db: Database, airdropId: string, receiverId: string, signature: string) {
+  await db.update(AirdropParticipants).set({
+    signature,
+  }).where(and(eq(AirdropParticipants.id, airdropId), eq(AirdropParticipants.receiverId, receiverId)));
 }
 
 // Product queries

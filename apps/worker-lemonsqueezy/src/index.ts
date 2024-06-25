@@ -76,6 +76,37 @@ app.post('/checkout/create', async (c) => {
   }
 });
 
+app.get('/portal/:customerId', async (c) => {
+  try {
+    const customerId = c.req.param('customerId');
+    const response = await fetch(`https://api.lemonsqueezy.com/v1/customers/${customerId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/vnd.api+json",
+        "Accept": "application/vnd.api+json",
+        "Authorization": `Bearer ${c.env.LEMONSQUEEZY_API_KEY_TEST}`
+      }
+    });
+
+    const responseData: any = await response.json();
+
+    console.log(responseData.data.attributes.urls.customer_portal);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Customer portal fetched",
+        data: {
+          portalUrl: responseData.data.attributes.urls.customer_portal
+        }
+      }),
+      { status: 200 }
+    );
+  } catch (e) {
+    return new Response(e.message, { status: 500 });
+  }
+});
+
 // webhook handlers
 
 const validateWebhook = (signature: string, secret: string) => {
@@ -97,6 +128,7 @@ app.post('/webhook/subscription', async (c) => {
       const db = database(databaseUrl);
 
       const productId = bodyData.data.attributes.variant_id;
+      const customerId = bodyData.data.attributes.customer_id;
       const subscriptionTier = await getSubscriptionTierFromProductId(db, productId);
 
       // set user subscription tier
@@ -107,7 +139,8 @@ app.post('/webhook/subscription', async (c) => {
           isSubscribed: true,
           subscriptionTier,
           subscriptionProductId: productId,
-          subscriptionExpiresAt: null
+          subscriptionExpiresAt: null,
+          customerId: customerId.toString()
         }
       );
     } else if (bodyData.meta.event_name === "subscription_updated") {
@@ -119,6 +152,7 @@ app.post('/webhook/subscription', async (c) => {
 
       const productId = bodyData.data.attributes.variant_id;
       const ends_at = bodyData.data.attributes.ends_at;
+      const customerId = bodyData.data.attributes.customer_id;
 
       await setUserSubscription(
         db,
@@ -127,7 +161,8 @@ app.post('/webhook/subscription', async (c) => {
           isSubscribed: isCancelled ? false : true,
           // subscriptionTier: isCancelled ? 0 : await getSubscriptionTierFromProductId(db, productId),
           subscriptionProductId: productId,
-          subscriptionExpiresAt: ends_at ? new Date(ends_at) : null
+          subscriptionExpiresAt: ends_at ? new Date(ends_at) : null,
+          customerId: customerId.toString()
         }
       );
     }

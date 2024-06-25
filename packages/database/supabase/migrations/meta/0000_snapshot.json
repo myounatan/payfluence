@@ -1,5 +1,5 @@
 {
-  "id": "59e6fa32-f688-4dd3-989d-02e0dac4512a",
+  "id": "e9384ce6-feba-452c-ae70-bc7c4c6e9968",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -10,9 +10,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "airdrop_id": {
           "name": "airdrop_id",
@@ -36,7 +37,7 @@
           "name": "signature",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "claimable_amount": {
           "name": "claimable_amount",
@@ -54,6 +55,12 @@
         "claimed_at": {
           "name": "claimed_at",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "claimed_transaction_hash": {
+          "name": "claimed_transaction_hash",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -91,9 +98,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "tip_engine_id": {
           "name": "tip_engine_id",
@@ -113,11 +121,17 @@
           "primaryKey": false,
           "notNull": true
         },
-        "claim_date": {
-          "name": "claim_date",
+        "claim_start_date": {
+          "name": "claim_start_date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
+        },
+        "claim_end_date": {
+          "name": "claim_end_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         },
         "points_to_token_ratio": {
           "name": "points_to_token_ratio",
@@ -186,9 +200,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "key": {
           "name": "key",
@@ -289,13 +304,20 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "user_id": {
           "name": "user_id",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chain_id": {
+          "name": "chain_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -312,6 +334,12 @@
           "notNull": false,
           "default": false
         },
+        "owner_address": {
+          "name": "owner_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "token_contract": {
           "name": "token_contract",
           "type": "text",
@@ -323,6 +351,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "public_timeline": {
+          "name": "public_timeline",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         },
         "created_at": {
           "name": "created_at",
@@ -426,9 +461,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "email": {
           "name": "email",
@@ -459,6 +495,12 @@
         "subscription_expires_at": {
           "name": "subscription_expires_at",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "customer_id": {
+          "name": "customer_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },

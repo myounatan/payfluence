@@ -47,8 +47,14 @@ app.post('/user/create', async (c) => {
 
     const db = database(c.env.DATABASE_URL_STAGING);
   
-    const user = await getUserByEmail(db, email);
-    if (user.length > 0) {
+    let user = undefined;
+    try {
+      user = await getUserByEmail(db, email);
+    } catch (e) {
+      // console.log(e)
+    }
+
+    if (user != undefined) {
       return new Response(
         JSON.stringify({
           success: false,
@@ -68,6 +74,7 @@ app.post('/user/create', async (c) => {
       { status: 200 }
     );
   } catch (e) {
+    console.log(e)
     return new Response(e.message, { status: 500 });
   }
 });

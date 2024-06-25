@@ -9,9 +9,7 @@
 		"cf-typegen": "wrangler types"
 	},
 	"dependencies": {
-		"@repo/database": "workspace:*",
-		"hono": "^4.4.6",
-		"yup": "^1.4.0"
+		"hono": "^4.4.6"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20240605.0",

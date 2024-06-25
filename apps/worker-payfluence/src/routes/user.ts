@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
 import { Bindings } from 'index';
 
-const usersRoute = new Hono<{ Bindings: Bindings }>()
+const userRoute = new Hono<{ Bindings: Bindings }>()
 
-usersRoute.get('/:id', async (c) => {
+userRoute.get('/:id', async (c) => {
   try {
     return new Response(
       JSON.stringify({
@@ -20,4 +20,4 @@ usersRoute.get('/:id', async (c) => {
   }
 });
 
-export default usersRoute;
+export default userRoute;

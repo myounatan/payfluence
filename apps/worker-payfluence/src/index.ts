@@ -1,21 +1,26 @@
-import { Hono, HonoRequest } from 'hono'
+import { Hono } from 'hono'
 
-import usersRoute from 'routes/users';
-import tipEnginesRoute from 'routes/tipengines';
+import airdropRoute from 'routes/airdrop';
 import publicRoute from 'routes/public';
+import tipEngineRoute from 'routes/tipengine';
+import userRoute from 'routes/user';
 
 import { jwt } from 'hono/jwt'
 import type { JwtVariables } from 'hono/jwt'
-import airdropsRoute from 'routes/airdrops';
 import { fetchPublicKey } from 'utils';
 
 // .dev.vars for dev and cloudflare dashboard for prod
 export type Bindings = {
-  DATABASE_URL_PROD: string
-  DATABASE_URL_STAGING: string
+  DATABASE_URL: string
   DYNAMIC_XYZ_API_KEY: string
   DYNAMIC_XYZ_ENVIRONMENT_ID: string
   DYNAMIC_XYZ_PUBLIC_KEY: string
+  ADMIN_WALLET_PRIVATE_KEY: string
+  ADMIN_WALLET_ADDRESS: string
+  PAYFLUENCE_CONTRACT_ADDRESS: string
+  EIP712_DOMAIN_NAME: string
+  EIP712_DOMAIN_VERSION: string
+  CHAIN_ID: string
 }
 
 type Variables = JwtVariables
@@ -41,9 +46,9 @@ app.get('/auth/test', async (c) => {
 
 // DASHBOARD ROUTES
 
-app.route('/users', usersRoute);
-app.route('/auth/tipengines', tipEnginesRoute);
-app.route('/auth/airdrops', airdropsRoute);
+app.route('/user', userRoute);
+app.route('/auth/tipengine', tipEngineRoute);
+app.route('/auth/airdrop', airdropRoute);
 
 // PUBLIC ROUTES
 

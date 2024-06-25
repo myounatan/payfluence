@@ -34,6 +34,7 @@ export const Users = pgTable('users', {
   subscriptionTier: integer('subscription_tier').default(0),
   subscriptionProductId: text('subscription_product_id'),
   subscriptionExpiresAt: timestamp('subscription_expires_at'),
+  customerId: text('customer_id'),
 
   createdAt: timestamp('created_at').default(sql`now()`),
   updatedAt: timestamp('updated_at').default(sql`now()`),
@@ -82,6 +83,7 @@ export const TipEngines = pgTable('tip_engine', {
   webhookId: text('webhook_id').notNull(),
   webhookActive: boolean('webhook_active').default(false),
 
+  ownerAddress: text('owner_address').notNull(), // address of EOA that owns the tokens
   tokenContract: text('token_contract').notNull(), // address of the token contract we are funding this tip engine with
   tipString: text('tip_string').notNull().unique(), // ex. "$DEGEN", must be unique to differentiate tip engines
 

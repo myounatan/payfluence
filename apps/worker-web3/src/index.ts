@@ -1,7 +1,4 @@
-import { Hono, HonoRequest } from 'hono'
-
-import { database } from "@repo/database";
-import { CreateCheckout, WebhookSchema } from 'types';
+import { Hono } from 'hono'
 
 // .dev.vars for dev and cloudflare dashboard for prod
 type Bindings = {
