@@ -1,10 +1,9 @@
 import { relations, sql } from 'drizzle-orm';
 
-import { integer, pgTable, serial, text, timestamp, boolean, bigint, pgEnum, json } from 'drizzle-orm/pg-core';
-
+import { integer, pgTable, serial, text, timestamp, boolean, bigint, pgEnum, uuid, json } from 'drizzle-orm/pg-core';
 
 export const FeatureFlags = pgTable('feature_flags', {
-  id: serial('id').primaryKey(),
+  id: uuid('id').defaultRandom().primaryKey(),
   
   key: text('key').notNull().unique(),
   value: text('value').notNull(),
@@ -27,7 +26,7 @@ export const RestrictedTipStrings = pgTable('restricted_tip_strings', {
 });
 
 export const Users = pgTable('users', {
-  id: serial('id').primaryKey(),
+  id: uuid('id').defaultRandom().primaryKey(),
 
   email: text('email').notNull().unique(),
 
@@ -73,7 +72,7 @@ export const usersRelations = relations(Users, ({ many }) => ({
 }));
 
 export const TipEngines = pgTable('tip_engine', {
-  id: serial('id').primaryKey(),
+  id: uuid('id').defaultRandom().primaryKey(),
 
   // user owns a tip engine
   userId: text('user_id').notNull(),
@@ -93,7 +92,7 @@ export const TipEngines = pgTable('tip_engine', {
 });
 
 export const Airdrops = pgTable('airdrop', {
-  id: serial('id').primaryKey(),
+  id: uuid('id').defaultRandom().primaryKey(),
 
   // tip engine owns an airdrop
   tipEngineId: text('tip_engine_id').notNull(),
@@ -161,7 +160,7 @@ export const TipPosts = pgTable('tip_post', {
 });
 
 export const AirdropParticipants = pgTable('airdrop_participant', {
-  id: serial('id').primaryKey(),
+  id: uuid('id').defaultRandom().primaryKey(),
 
   airdropId: text('airdrop_id').notNull(),
   receiverId: text('receiver_id').notNull(), // farcaster id, twitter user id, etc
@@ -175,6 +174,7 @@ export const AirdropParticipants = pgTable('airdrop_participant', {
 
   claimed: boolean('claimed').default(false),
   claimedAt: timestamp('claimed_at'),
+  claimedTransactionHash: text('claimed_transaction_hash'),
 
   createdAt: timestamp('created_at').default(sql`now()`),
   updatedAt: timestamp('updated_at').default(sql`now()`),
