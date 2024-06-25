@@ -186,6 +186,66 @@ describe("Payfluence", function () {
       txn = payfluence.connect(owner).verify(signature, airdropMessage);
       await expect(txn).to.not.be.reverted;
     });
+
+    it("Should revert when message is signed by non-admin wallet", async function () {
+      const { payfluence, payfluenceAddress, token, tokenAddress, owner, ownerAddress, admin, adminAddress, otherAccountAddress } = await loadFixture(deployFixture);
+
+      const amount = BigInt(1000);
+      let txn = await token.connect(owner).approve(payfluenceAddress, amount);
+      await txn.wait();
+      txn = await payfluence.connect(owner).fundERC20(AIRDROP_ID, ownerAddress, tokenAddress, amount);
+      await txn.wait();
+      expect(await token.balanceOf(payfluenceAddress)).to.equal(amount);
+
+      const chainId = Number(await payfluence.getChainId())
+
+      const verifyingContract = payfluenceAddress;
+      const airdropMessage: Payfluence.AirdropMessageStruct = {
+        airdropId: AIRDROP_ID,
+        token: tokenAddress,
+        owner: ownerAddress,
+        recipient: otherAccountAddress,
+        amountClaimable: amount,
+      };
+
+      const data: TypedMessage<any> = {
+        types: {
+          EIP712Domain: [
+            { name: "name", type: "string" },
+            { name: "version", type: "string" },
+            { name: "chainId", type: "uint256" },
+            { name: "verifyingContract", type: "address" },
+          ],
+          AirdropMessage: [
+            { name: "airdropId", type: "string" },
+            { name: "token", type: "address" },
+            { name: "owner", type: "address" },
+            { name: "recipient", type: "address" },
+            { name: "amountClaimable", type: "uint256" },
+          ],
+        },
+        domain: {
+          name: "Payfluence",
+          version: "1",
+          chainId,
+          verifyingContract,
+        },
+        primaryType: "AirdropMessage",
+        message: airdropMessage,
+      };
+
+      // 32 bytes private key from owner
+      const privateKey = Buffer.from((process.env.ACCOUNT_4_PRIVATE_KEY || "").substring(2,66), "hex");
+
+      const signature = signTypedData({
+        privateKey,
+        data,
+        version: SignTypedDataVersion.V4,
+      });
+
+      txn = payfluence.connect(owner).verify(signature, airdropMessage);
+      await expect(txn).to.be.reverted;
+    });
   });
 
 });
