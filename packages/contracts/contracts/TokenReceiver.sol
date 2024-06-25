@@ -181,7 +181,7 @@ contract TokenReceiver is
         if (!success) revert TransferNativeFailed(id, to, amount);
     }
 
-    function _transferERC20(
+    function _transferFromERC20(
         string memory id,
         address to,
         address token,
@@ -193,6 +193,20 @@ contract TokenReceiver is
         contractBalance[id].erc20[token] -= amount;
 
         IERC20(token).transferFrom(address(this), to, amount);
+    }
+
+    function _transferERC20(
+        string memory id,
+        address to,
+        address token,
+        uint256 amount
+    ) internal {
+        if (contractBalance[id].erc20[token] < amount)
+            revert NotEnoughFunds(id, AssetType.ERC20, token, 0, amount);
+
+        contractBalance[id].erc20[token] -= amount;
+
+        IERC20(token).transfer(to, amount);
     }
 
     function _safeTransferERC721(

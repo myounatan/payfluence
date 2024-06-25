@@ -15,7 +15,7 @@ contract Payfluence is
 {
   error InvalidSigner();
   error AirdropAlreadyClaimed();
-  error TransferNativeFailed();
+  error TransferFailed();
   error OnlyAirdropOwner();
   error OnlyTokenOwner();
 
@@ -36,7 +36,7 @@ contract Payfluence is
   bytes32 private constant AIRDROP_MESSAGE_TYPE = keccak256("AirdropMessage(string airdropId,address token,address owner,address recipient,uint256 amountClaimable)");
 
   modifier onlyAirdropOwner(string memory airdropId) {
-    if (airdropOwners[airdropId] == address(0) || msg.sender != airdropOwners[airdropId]) {
+    if (airdropOwners[airdropId] != address(0) && msg.sender != airdropOwners[airdropId]) {
       revert OnlyAirdropOwner();
     }
     _;
@@ -151,7 +151,7 @@ contract Payfluence is
     uint256 amount = address(this).balance;
 
     (bool success, ) = _to.call{value: amount}("");
-    if (!success) revert TransferNativeFailed();
+    if (!success) revert TransferFailed();
   }
 
   function adminWithdrawERC20(

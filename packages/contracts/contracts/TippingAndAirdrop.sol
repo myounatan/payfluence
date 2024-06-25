@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-interface IERC20 {
-    // return bool to indicate whether the operation was successful
-    function transferFrom(address sender, address recipient, uint256 amount) external return (bool);
-}
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // @notice Only the owner can perform this action.
 error notAuthorized();
@@ -28,9 +25,9 @@ contract Tipping {
 
     event TipSent(address indexed from, address indexed to, uint256 amount, address token, string message);
 
-    if (msg.sender != owner) revert notAuthorized();
+    function sendTip(address token, address to, uint256 amount, string memory message) public {
+        if (msg.sender != owner) revert notAuthorized();
 
-    function sendTip(address token, addres to, uint256 amount, string memory message) public {
         if (amount <= 0) revert notEnoughValue();
 
         bool success = IERC20(token).transferFrom(msg.sender, to, amount);
@@ -50,12 +47,12 @@ contract Airdrop {
     
     event AirdropExecuted(address indexed to, uint256 amount, address token);
 
-    function executeAirdrop(Address token, address[] memory recipients, uint256[] memory amounts) public {
+    function executeAirdrop(address token, address[] memory recipients, uint256[] memory amounts) public {
         if (msg.sender != owner) revert notAuthorized(); // should this be a modifier instead?
         if (recipients.length != amounts.length) revert mismatch();
 
-        for (uint256 i = 0; i < recipients.length, i++) {
-            bool success = IERC20(token).transferFrom(msg.sender, to, amount);
+        for (uint256 i = 0; i < recipients.length; i++) {
+            bool success = IERC20(token).transferFrom(msg.sender, recipients[i], amounts[i]);
             if (!success) revert transferFailed();
 
             emit AirdropExecuted(recipients[i], amounts[i], token);
