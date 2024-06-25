@@ -13,7 +13,7 @@ import { Input } from "@ui/components/ui/input"
 import { Label } from "@ui/components/ui/label"
 import Link from "next/link"
 
-interface DiscardDialogProps {
+interface SimpleDialogProps {
   title: string
   description?: string
   buttonLabel?: string
@@ -21,7 +21,7 @@ interface DiscardDialogProps {
   children: React.ReactNode
 }
 
-export default function SimpleDialog({ title, description, buttonLabel, href, children }: DiscardDialogProps) {
+export default function SimpleDialog({ title, description, buttonLabel, href, children }: SimpleDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>

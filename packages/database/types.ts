@@ -30,20 +30,26 @@ export const CHAIN_NAMES = Object.keys(CHAIN_NAME_ID_MAP);
 export const CHAIN_IDS = Object.values(CHAIN_NAME_ID_MAP);
 
 export const TipEngineSchema = z.object({
-  name: z.string(),
+  name: z.string().min(6, 'Name must be at least 6 characters long'),
   chainId: z.string().refine((chainId) => CHAIN_IDS.includes(parseInt(chainId))),
   // socialPlatform: ProviderTypeSchema,
-  tokenContract: z.string().refine(isAddress),
-  tipString: z.string(),
+  tokenContract: z.string().min(1).refine(isAddress),
+  tipString: z.string().min(4, 'Tip string must be at least 4 characters long'),
   publicTimeline: z.boolean().default(false),
-})
+});
 
 export const AirdropSchema = z.object({
   startDate: z.date(),
   claimStartDate: z.date(),
   claimEndDate: z.date(),
-  pointsToTokenRatio: z.number().min(1).default(10),
-  requireLegacyAccount: z.boolean().default(false),
-  minTokens: z.number().min(0),
-  minCasts: z.number().min(0),
-})
+  pointsToTokenRatio: z.coerce.number().min(1).default(10),
+  requireLegacyAccount: z.boolean().default(true),
+  minTokens: z.coerce.number().min(0, 'Minimum tokens must be at least 0'),
+  minCasts: z.coerce.number().min(0),
+})/*.refine((data) => data.claimStartDate > data.startDate, {
+  message: "Airdrop end date must be after start date",
+  path: ['claimStartDate'],
+}).refine((data) => data.claimEndDate > data.claimStartDate, {
+  message: "Airdrop-Claim end date must be after Airdrop end date",
+  path: ['claimEndDate'],
+});*/
