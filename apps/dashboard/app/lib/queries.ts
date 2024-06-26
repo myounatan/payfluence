@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 import { useEffect, useState } from 'react';
 dotenv.config()
 
-export const useLocalUser = (authToken: string | undefined) => {
+export const useLocalUser = (authToken: string | undefined): { localUser: User } => {
   const [localUser, setLocalUser] = useState<User | undefined>(undefined);
 
   useEffect(() => {
