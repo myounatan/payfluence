@@ -166,7 +166,7 @@ export default function CreateTipEngine() {
       <div className="flex flex-col sm:gap-4 sm:py-4">
         <HeaderNav breadcrumbLinks={breadcrumbLinks} />
 
-        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 mb-[120px]">
           <Form {...pageForm}>
             <form id="page-form" onSubmit={pageForm.handleSubmit(onSubmit, (errors) => console.log(errors))}>
               <div className="mx-auto grid max-w-[59rem] flex-1 auto-rows-max gap-4">
@@ -337,6 +337,16 @@ export default function CreateTipEngine() {
                                   Select Token
                                 </Button>
                               )}
+
+                              <FormField
+                                control={pageForm.control}
+                                name="tipEngine.tokenContract"
+                                render={({ field }) => (
+                                  <FormItem className="grid gap-0">
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
                             </div>
                           </div>
                         </CardContent>
