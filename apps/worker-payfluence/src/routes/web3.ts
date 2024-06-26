@@ -1,15 +1,10 @@
+import { User } from '@repo/database';
 import { Hono } from 'hono'
+import { Bindings } from 'index';
 
-// .dev.vars for dev and cloudflare dashboard for prod
-type Bindings = {
-  MORALIS_API_KEY: string
-}
+const web3Route = new Hono<{ Bindings: Bindings }>()
 
-const app = new Hono<{ Bindings: Bindings }>()
-app.fire()
-
-// get erc20 tokens deployed by an address
-app.get('/erc20/:address/:chain', async (c) => {
+web3Route.get('/erc20/:address/:chain', async (c) => {
   try {
     const address = c.req.param('address');
     const chain = c.req.param('chain') || 'base';
@@ -36,6 +31,4 @@ app.get('/erc20/:address/:chain', async (c) => {
   }
 });
 
-app.all('*', () => new Response("Route not found", { status: 404 }))
-
-export default app
+export default web3Route;

@@ -27,7 +27,7 @@ function activeSubMenuClasses() {
 
 export default function SidebarNav({ activeMenu, activeSubMenu }: SidebarNavProps) {
   return (
-    <div className="sticky grid min-h-screen w-full grid-cols-[220px_1fr] lg:grid-cols-[220px_1fr] bg-slate-100">
+    <aside className="h-screen sticky top-0 grid w-full grid-cols-[220px_1fr] lg:grid-cols-[220px_1fr] bg-slate-100">
       <div className="hidden border-r bg-slate-50 md:block border-slate-200">
         <div className="flex h-full max-h-screen flex-col">
           <div className="flex h-14 items-center px-4 lg:h-[60px] lg:px-6 justify-center">
@@ -103,6 +103,6 @@ export default function SidebarNav({ activeMenu, activeSubMenu }: SidebarNavProp
           </div>
         </div>
       </div>
-    </div>
+    </aside>
   )
 }

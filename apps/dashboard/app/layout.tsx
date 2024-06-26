@@ -42,6 +42,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }): JSX.Element {
+
+  
+
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -50,16 +53,16 @@ export default function RootLayout({
           <QueryClientProvider client={queryClient}> 
             <WalletContextProvider>
           
-        <DynamicContextProvider
-          locale={dynamicContextLocale}
-          settings={{
-            // Find your environment id at https://app.dynamic.xyz/dashboard/developer
-            environmentId: process.env.NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID || "sandbox",
-            walletConnectors: [EthereumWalletConnectors],
-          }}
-        >
-          {children}
-        </DynamicContextProvider>
+              <DynamicContextProvider
+                locale={dynamicContextLocale}
+                settings={{
+                  // Find your environment id at https://app.dynamic.xyz/dashboard/developer
+                  environmentId: process.env.NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID || "sandbox",
+                  walletConnectors: [EthereumWalletConnectors],
+                }}
+              >
+                {children}
+              </DynamicContextProvider>
 
             </WalletContextProvider>
           </QueryClientProvider> 

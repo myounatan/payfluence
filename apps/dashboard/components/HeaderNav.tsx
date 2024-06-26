@@ -8,7 +8,7 @@ import ConnectWalletDialog from "@/components/ConnectWalletDialog";
 import { useAccount } from "wagmi";
 import { useWalletContext } from "@/app/context/WalletContext";
 import { truncate } from "@ui/lib/utils";
-import { LogOut } from "lucide-react";
+import { LogOut, UserIcon } from "lucide-react";
 import { getAuthToken, useDynamicContext, useIsLoggedIn } from "@dynamic-labs/sdk-react-core";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -63,20 +63,15 @@ export default function HeaderNav({ breadcrumbLinks }: HeaderNavProps) {
             size="icon"
             className="overflow-hidden rounded-full"
           >
-            <Image
-              src="/metamask.svg"
-              width={36}
-              height={36}
-              alt="Avatar"
-              className="overflow-hidden rounded-full"
-            />
+            <UserIcon className="w-6 h-6" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuLabel>
+            {localUser ? localUser.email : "My Account"}
+          </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>Settings</DropdownMenuItem>
-          <DropdownMenuItem>Support</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogOut}>Logout</DropdownMenuItem>
         </DropdownMenuContent>

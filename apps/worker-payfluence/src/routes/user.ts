@@ -4,7 +4,7 @@ import { Bindings } from 'index';
 
 const userRoute = new Hono<{ Bindings: Bindings }>()
 
-userRoute.get('/', async (c) => {
+userRoute.get('/local', async (c) => {
   try {
     const user: User = c.get('user' as never)
 

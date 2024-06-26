@@ -12,7 +12,7 @@ export const useLocalUser = (authToken: string | undefined): { localUser: User |
         "Content-Type": "application/json",
         "Authorization": `Bearer ${authToken}`
       }};
-      fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/user`, options).then(response => response.json()).then(
+      fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/user/local`, options).then(response => response.json()).then(
         jsonData => { return setLocalUser(jsonData.data.user) });
     }
 

@@ -89,7 +89,7 @@ export default function TipEngines() {
                     Export
                   </span>
                 </Button> */}
-                <Button variant="highlight-primary" className="hover:bg-highlight-secondary" onClick={onClickNewTipEngine}>
+                <Button variant="highlight-primary" onClick={onClickNewTipEngine}>
                   <Plus className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     New Tip Engine

@@ -37,7 +37,7 @@ export const TipEngineSchema = z.object({
   chainId: z.string().refine((chainId) => CHAIN_IDS.includes(parseInt(chainId))),
   // socialPlatform: ProviderTypeSchema,
   tokenContract: z.string().min(1).refine(isAddress),
-  tipString: z.string().min(4, 'Tip string must be at least 4 characters long'),
+  tipString: z.string().min(3, 'Tip string must be at least 3 characters long').startsWith('$', 'Tip string must start with $'),
   publicTimeline: z.boolean().default(false),
 });
 

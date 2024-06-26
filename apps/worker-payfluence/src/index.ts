@@ -10,6 +10,7 @@ import userRoute from 'routes/user';
 // import type { JwtVariables } from 'hono/jwt'
 import * as jose from 'jose'
 import { User, database, getUserByEmail } from '@repo/database';
+import web3Route from 'routes/web3';
 
 // .dev.vars for dev and cloudflare dashboard for prod
 export type Bindings = {
@@ -23,6 +24,7 @@ export type Bindings = {
   EIP712_DOMAIN_NAME: string
   EIP712_DOMAIN_VERSION: string
   CHAIN_ID: string
+  MORALIS_API_KEY: string
 }
 
 // type Variables = JwtVariables
@@ -31,12 +33,13 @@ const app = new Hono<{ Bindings: Bindings }>()
 app.fire()
 
 app.use('*', cors({
-  origin: 'http://localhost:3002',
+  origin: '*',
   allowHeaders: ['Origin', 'Content-Type', 'Authorization'],
   allowMethods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }))
 
+// add dynamic.xyz jwt verification to any route with /auth prefix
 app.use('/auth/*', async (c, next) => {
   const bearerToken = c.req.header('Authorization')
   if (!bearerToken) {
@@ -66,6 +69,16 @@ app.use('/auth/*', async (c, next) => {
   await next()
 })
 
+// add user object to any route with /auth/user prefix
+app.use('/auth/user', async (c, next) => {
+  // add user to context
+  const db = database(c.env.DATABASE_URL);
+  const user: User = await getUserByEmail(db, c.get('email' as never));
+  c.set('user' as never, user)
+
+  await next()
+})
+
 app.get('/auth/test', async (c) => {
   const user: User = c.get('user' as never)
   return new Response(`Authenticated User Id ${user.id}`, { status: 200 })
@@ -75,8 +88,9 @@ app.get('/auth/test', async (c) => {
 // DASHBOARD ROUTES
 
 app.route('/auth/user', userRoute);
-app.route('/auth/tipengine', tipEngineRoute);
-app.route('/auth/airdrop', airdropRoute);
+app.route('/auth/user/tipengine', tipEngineRoute);
+app.route('/auth/user/airdrop', airdropRoute);
+app.route('/auth/web3', web3Route);
 
 // PUBLIC ROUTES
 
