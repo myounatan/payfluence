@@ -18,11 +18,16 @@ web3Route.get('/erc20/:address/:chain', async (c) => {
 
     const responseData: any = await response.json();
 
+    // in responseData, create a new list of tokens with token.possible_spam=true items omitted
+    const removedSpam = responseData.filter((token: any) => {
+      return !token.possible_spam;
+    });
+
     return new Response(
       JSON.stringify({
         success: true,
         message: "Checkout created",
-        data: responseData,
+        data: removedSpam,
       }),
       { status: 200 }
     );

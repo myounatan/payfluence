@@ -3,6 +3,7 @@
 import "@repo/ui/globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { usePathname } from "next/navigation"
 
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -17,6 +18,8 @@ import {
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 
 import { wagmiConfig } from '@/config/web3';
+import SidebarNav from "@/components/SidebarNav";
+import HeaderNav from "@/components/HeaderNav";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,13 +40,15 @@ const dynamicContextLocale = {
 
 const queryClient = new QueryClient()
 
+const SKIP_LAYOUT_PAGES = ["/login", "/"];
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }): JSX.Element {
 
-  
+  const pathname = usePathname() || "/";
 
   return (
     <html lang="en">
@@ -61,7 +66,22 @@ export default function RootLayout({
                   walletConnectors: [EthereumWalletConnectors],
                 }}
               >
-                {children}
+                {SKIP_LAYOUT_PAGES.includes(pathname) ? (
+                  <>
+                    {children}
+                  </>
+                ) : (
+                  <div className="grid min-h-screen w-full grid-cols-[220px_1fr] lg:grid-cols-[220px_1fr] bg-slate-100">
+
+                    <SidebarNav />
+
+                    <div className="flex flex-col sm:gap-4 sm:py-4">
+                      <HeaderNav breadcrumbLinks={[]} />
+                      {children}
+                    </div>
+                    
+                  </div>
+                )}
               </DynamicContextProvider>
 
             </WalletContextProvider>

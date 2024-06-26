@@ -40,16 +40,7 @@ export default function TipEngines() {
     router.push("/engines/create");
   }
 
-
   return (
-    <div className="grid min-h-screen w-full grid-cols-[220px_1fr] lg:grid-cols-[220px_1fr] bg-slate-100">
-
-      <SidebarNav activeMenu="engines" />
-
-      <div className="flex flex-col sm:gap-4 sm:py-4">
-        <HeaderNav breadcrumbLinks={breadcrumbLinks} />
-
-
       <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           <Tabs defaultValue="all">
             <div className="flex items-center">
@@ -415,8 +406,5 @@ export default function TipEngines() {
             </TabsContent>
           </Tabs>
         </main>
-      </div>
-
-    </div>
   )
 }

@@ -5,11 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@repo
 import { cn } from "@ui/lib/utils";
 import { ChevronDown, Coins, Key, PlusCircleIcon, Settings } from "lucide-react";
 import Link from "next/link";
-
-export interface SidebarNavProps {
-  activeMenu: string
-  activeSubMenu?: string
-}
+import { usePathname } from "next/navigation";
 
 function inactiveMenuClasses() {
   return "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
@@ -25,7 +21,11 @@ function activeSubMenuClasses() {
 
 
 
-export default function SidebarNav({ activeMenu, activeSubMenu }: SidebarNavProps) {
+export default function SidebarNav() {
+  const pathname = usePathname() || "/";
+
+  const activeMenu = pathname.split("/")[1];
+
   return (
     <aside className="h-screen sticky top-0 grid w-full grid-cols-[220px_1fr] lg:grid-cols-[220px_1fr] bg-slate-100">
       <div className="hidden border-r bg-slate-50 md:block border-slate-200">
@@ -63,26 +63,8 @@ export default function SidebarNav({ activeMenu, activeSubMenu }: SidebarNavProp
                 className={cn( activeMenu === "settings" ? activeMenuClasses() : inactiveMenuClasses() )}
               >
                 <Settings className="h-4 w-4" />
-                Settings{" "}
-                <ChevronDown className={cn("h-4 w-4 ml-auto transform", `${activeMenu === "settings" ? "rotate-180" : "rotate-0"}`)} />
+                Settings
               </Link>
-              {/* settings sub menu */}
-              {activeMenu === "settings" && (
-                <div className="grid grid-cols-1 gap-1.5 ml-6 mt-2">
-                  <Link
-                    href="#"
-                    className={cn( activeSubMenu === "profile" ? activeSubMenuClasses() : inactiveMenuClasses() )}
-                  >
-                    Profile
-                  </Link>
-                  <Link
-                    href="#"
-                    className={cn( activeSubMenu === "billing" ? activeSubMenuClasses() : inactiveMenuClasses() )}
-                  >
-                    Billing
-                  </Link>
-                </div>
-              )}
             </nav>
           </div>
           <div className="mt-auto p-4">

@@ -1,4 +1,5 @@
-import { User } from '@repo/database/types'
+import { BreadcrumbLinks } from '@/components/Breadcrumbs';
+import { CHAIN_NAMES, MORALIS_CHAIN_NAMES, User } from '@repo/database/types'
 import dotenv from 'dotenv'
 import { useEffect, useState } from 'react';
 dotenv.config()
@@ -38,4 +39,29 @@ export const useAvailableTipEngine = (authToken: string | undefined): { checkAva
   }
 
   return { checkAvailability };
+}
+
+export const useOwnedTokens = (
+  authToken: string | undefined,
+  address: string | undefined,
+  chainId: number | undefined
+): { ownedTokens: any[] } => {
+  const [ownedTokens, setOwnedTokens] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!authToken || !address || !chainId) return;
+
+    const fetchApi = async () => {
+      const options = {method: 'GET', headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }};
+      fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/web3/erc20/${address}/${MORALIS_CHAIN_NAMES[chainId]}`, options).then(response => response.json()).then(
+        jsonData => { console.log(jsonData.data); return setOwnedTokens(jsonData.data) });
+    }
+
+    fetchApi()
+  }, [authToken, address, chainId]);
+
+  return { ownedTokens };
 }

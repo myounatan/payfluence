@@ -27,9 +27,14 @@ export const CHAIN_NAME_ID_MAP = {
   ['Base Sepolia']: 84532,
 };
 
-export const CHAIN_ID_NAME_MAP = {
+export const CHAIN_ID_NAME_MAP: Record<number, string> = {
   8453: 'Base Mainnet',
   84532: 'Base Sepolia',
+};
+
+export const MORALIS_CHAIN_NAMES: Record<number, string> = {
+  84532: 'base%20sepolia',
+  8453: 'base',
 };
 
 export const CHAIN_NAMES = Object.keys(CHAIN_NAME_ID_MAP);
@@ -39,7 +44,7 @@ export const TipEngineSchema = z.object({
   name: z.string().min(6, 'Name must be at least 6 characters long'),
   chainId: z.string().refine((chainId) => CHAIN_IDS.includes(parseInt(chainId))),
   // socialPlatform: ProviderTypeSchema,
-  tokenContract: z.string().refine(isAddress, 'Token contract must be a valid Ethereum address'),
+  tokenContract: z.string().min(1, 'Must select a token to use').refine(isAddress, 'Token must be a valid Ethereum ERC20 token'),
   tipString: z.string().min(3, 'Tip string must be at least 3 characters long').startsWith('$', 'Tip string must start with $'),
   publicTimeline: z.boolean().default(false),
   slug: z.string().min(6, 'Slug must be at least 6 characters').refine((slug) => /^[a-z0-9-]+$/.test(slug), 'Slug must be lowercase and contain only letters, numbers, and hyphens'),
