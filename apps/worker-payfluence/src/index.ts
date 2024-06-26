@@ -1,4 +1,4 @@
-import { Hono } from 'hono'
+import { Context, Hono } from 'hono'
 import { cors } from 'hono/cors'
 
 import airdropRoute from 'routes/airdrop';
@@ -61,26 +61,18 @@ app.use('/auth/*', async (c, next) => {
   const email: string = payload.verified_credentials[0].email
   c.set('email' as never, email)
 
-  // add user to context
+  await next()
+})
+
+export const getUser = async (c: Context) => {
+  const email: string = c.get('email' as never)
   const db = database(c.env.DATABASE_URL);
   const user: User = await getUserByEmail(db, email)
-  c.set('user' as never, user)
-
-  await next()
-})
-
-// add user object to any route with /auth/user prefix
-app.use('/auth/user', async (c, next) => {
-  // add user to context
-  const db = database(c.env.DATABASE_URL);
-  const user: User = await getUserByEmail(db, c.get('email' as never));
-  c.set('user' as never, user)
-
-  await next()
-})
+  return user
+}
 
 app.get('/auth/test', async (c) => {
-  const user: User = c.get('user' as never)
+  const user: User = await getUser(c)
   return new Response(`Authenticated User Id ${user.id}`, { status: 200 })
 });
 

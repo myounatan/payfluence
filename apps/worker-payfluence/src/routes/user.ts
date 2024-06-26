@@ -1,12 +1,12 @@
 import { User } from '@repo/database';
 import { Hono } from 'hono'
-import { Bindings } from 'index';
+import { Bindings, getUser } from 'index';
 
 const userRoute = new Hono<{ Bindings: Bindings }>()
 
 userRoute.get('/local', async (c) => {
   try {
-    const user: User = c.get('user' as never)
+    const user: User = await getUser(c)
 
     return new Response(
       JSON.stringify({
@@ -26,6 +26,8 @@ userRoute.get('/local', async (c) => {
       { status: 200 }
     );
   } catch (e) {
+    console.log("/local")
+    console.log(e)
     return new Response(e.message, { status: 500 });
   }
 });
