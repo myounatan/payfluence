@@ -10,15 +10,15 @@
 	},
 	"dependencies": {
 		"@metamask/eth-sig-util": "^7.0.2",
+		"@repo/contracts": "workspace:*",
 		"@repo/database": "workspace:*",
-    "@repo/contracts": "workspace:*",
 		"hono": "^4.4.6",
+		"jose": "^5.4.1",
 		"jsonwebtoken": "^9.0.2",
 		"yup": "^1.4.0"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20240605.0",
-		"@types/jsonwebtoken": "^9.0.6",
 		"@types/node": "^20.5.7",
 		"@types/service-worker-mock": "^2.0.1",
 		"wrangler": "^3.9.0"

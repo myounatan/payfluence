@@ -1,5 +1,17 @@
+import { User } from '@repo/database';
 import { Hono } from 'hono'
 import { Bindings } from 'index';
+
+const getTipEngineAllowance = async (user: User) => {
+  switch (user.subscriptionTier) {
+    case 1:
+      return 1;
+    case 2:
+      return 5;
+    default:
+      return 0;
+  }
+}
 
 const tipEngineRoute = new Hono<{ Bindings: Bindings }>()
 

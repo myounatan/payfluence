@@ -1,6 +1,6 @@
-import { and, eq } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import { AirdropParticipants, Airdrops, ProductIdSubscriptionTierMap, TipEngines, Users } from './schema';
-import { Airdrop, AirdropParticipant, TipEngine, User, UserSubscriptionParams } from './types';
+import { Airdrop, AirdropParticipant, NewTipEngine, TipEngine, User, UserSubscriptionParams } from './types';
 import { Database } from './database';
 
 // User queries
@@ -33,6 +33,14 @@ export async function setUserSubscription(
 
 // Tip engine queries
 
+export async function getCountActiveTipEngines(db: Database, userId: string): Promise<number> {
+  const result: {
+    count: number;
+  }[] = await db.select({ count: count() }).from(TipEngines).where(and(eq(TipEngines.userId, userId), eq(TipEngines.webhookActive, true)));
+
+  return result[0].count;
+}
+
 export async function getTipEngineById(db: Database, tipEngineId: string): Promise<TipEngine> {
   const tipEngines = await db.select().from(TipEngines).where(eq(TipEngines.id, tipEngineId));
 
@@ -52,6 +60,16 @@ export async function getTipEngineByAirdropId(db: Database, airdropId: string): 
   }
 
   return tipEngines[0];
+}
+
+export async function createTipEngine(db: Database, tipEngineParams: NewTipEngine): Promise<TipEngine> {
+  const tipEngine = await db.insert(TipEngines).values(tipEngineParams);
+
+  return tipEngine[0];
+}
+
+export async function getTipEnginesForUser(db: Database, userId: string): Promise<TipEngine[]> {
+  return db.select().from(TipEngines).where(eq(TipEngines.userId, userId));
 }
 
 // Airdrop queries

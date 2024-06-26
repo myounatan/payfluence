@@ -9,14 +9,35 @@ import { useAccount } from "wagmi";
 import { useWalletContext } from "@/app/context/WalletContext";
 import { truncate } from "@ui/lib/utils";
 import { LogOut } from "lucide-react";
+import { getAuthToken, useDynamicContext, useIsLoggedIn } from "@dynamic-labs/sdk-react-core";
+import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
+import { User } from "@repo/database/types";
+import { useLocalUser } from "@/app/lib/queries";
 
 interface HeaderNavProps {
   breadcrumbLinks: BreadcrumbLinks;
 }
 
+
 export default function HeaderNav({ breadcrumbLinks }: HeaderNavProps) {
+  const { handleLogOut: dynamicLogOut, user: dynamicUser, authToken } = useDynamicContext();
+  const isLoggedIn = useIsLoggedIn();
   const { disconnectWallet } = useWalletContext();
   const { address: walletAddress, isConnected } = useAccount();
+
+  const handleLogOut = async () => {
+    await dynamicLogOut();
+  }
+
+  const { localUser } = useLocalUser(authToken);
+
+  useEffect(() => {
+    if (localUser) {
+      console.log("we now have local user!!!!")
+      console.log(localUser)
+    }
+  }, [localUser]);
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -57,7 +78,7 @@ export default function HeaderNav({ breadcrumbLinks }: HeaderNavProps) {
           <DropdownMenuItem>Settings</DropdownMenuItem>
           <DropdownMenuItem>Support</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Logout</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogOut}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
