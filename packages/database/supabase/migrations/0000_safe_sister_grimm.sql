@@ -64,12 +64,14 @@ CREATE TABLE IF NOT EXISTS "tip_engine" (
 	"chain_id" integer NOT NULL,
 	"webhook_id" text NOT NULL,
 	"webhook_active" boolean DEFAULT false,
+	"slug" text NOT NULL,
 	"owner_address" text NOT NULL,
 	"token_contract" text NOT NULL,
 	"tip_string" text NOT NULL,
 	"public_timeline" boolean DEFAULT false,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now(),
+	CONSTRAINT "tip_engine_slug_unique" UNIQUE("slug"),
 	CONSTRAINT "tip_engine_tip_string_unique" UNIQUE("tip_string")
 );
 --> statement-breakpoint

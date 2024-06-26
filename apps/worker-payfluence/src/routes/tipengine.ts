@@ -1,4 +1,4 @@
-import { User } from '@repo/database';
+import { Database, User, database, isValidSlug, isValidTipString } from '@repo/database';
 import { Hono } from 'hono'
 import { Bindings } from 'index';
 
@@ -16,14 +16,14 @@ const getTipEngineAllowance = async (user: User) => {
 const tipEngineRoute = new Hono<{ Bindings: Bindings }>()
 
 // return full tip engine info + airdrop info
-tipEngineRoute.get('/:id', async (c) => {
+tipEngineRoute.get('/lookup/:id', async (c) => {
   try {
     const { id } = c.req.param();
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "User found",
+        message: "Tip engine found",
         data: {
           
         }
@@ -36,7 +36,7 @@ tipEngineRoute.get('/:id', async (c) => {
 });
 
 // set tip engine publish status (aka if neynar webhook is published or not)
-tipEngineRoute.post('/:id/setpublish', async (c) => {
+tipEngineRoute.post('/lookup/:id/setpublish', async (c) => {
   try {
     const { id } = c.req.param();
 
@@ -74,6 +74,31 @@ tipEngineRoute.post('/create', async (c) => {
       { status: 200 }
     );
   } catch (e) {
+    return new Response(e.message, { status: 500 });
+  }
+});
+
+tipEngineRoute.get('/available', async (c) => {
+  try {
+    const { slug, tipstring } = c.req.query();
+
+    const db: Database = database(c.env.DATABASE_URL);
+    const availableSlug = await isValidSlug(db, slug);
+    const availableTipString = await isValidTipString(db, tipstring);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Result executed successfully",
+        data: {
+          availableSlug,
+          availableTipString
+        }
+      }),
+      { status: 200 }
+    );
+  } catch (e) {
+    console.log(e)
     return new Response(e.message, { status: 500 });
   }
 });

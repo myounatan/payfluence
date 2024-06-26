@@ -21,7 +21,7 @@ export const SubscriptionTierFeatures = pgTable('subscription_tier_features', {
 });
 
 export const RestrictedTipStrings = pgTable('restricted_tip_strings', {
-  id: text('tip_string').primaryKey(),
+  tipString: text('tip_string').primaryKey(),
   restricted: boolean('restricted').default(true),
 });
 
@@ -82,6 +82,8 @@ export const TipEngines = pgTable('tip_engine', {
 
   webhookId: text('webhook_id').notNull(),
   webhookActive: boolean('webhook_active').default(false),
+
+  slug: text('slug').notNull().unique(),
 
   ownerAddress: text('owner_address').notNull(), // address of EOA that owns the tokens
   tokenContract: text('token_contract').notNull(), // address of the token contract we are funding this tip engine with

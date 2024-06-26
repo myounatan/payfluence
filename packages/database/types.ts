@@ -1,5 +1,5 @@
 import { InferSelectModel, InferInsertModel } from 'drizzle-orm';
-import { Users, TipEngines, Airdrops, ProviderType, AirdropParticipants } from './schema';
+import { Users, TipEngines, Airdrops, ProviderType, AirdropParticipants, RestrictedTipStrings } from './schema';
 import { z } from 'zod';
 import { isAddress } from 'ethers';
 
@@ -16,6 +16,9 @@ export type NewAirdrop = InferInsertModel<typeof Airdrops>;
 
 export type AirdropParticipant = InferSelectModel<typeof AirdropParticipants>;
 export type NewAirdropParticipant = InferInsertModel<typeof AirdropParticipants>;
+
+export type RestrictedTipString = InferSelectModel<typeof RestrictedTipStrings>;
+export type NewRestrictedTipString = InferInsertModel<typeof RestrictedTipStrings>;
 
 export const ProviderTypeSchema = z.enum(ProviderType.enumValues);
 
@@ -36,9 +39,10 @@ export const TipEngineSchema = z.object({
   name: z.string().min(6, 'Name must be at least 6 characters long'),
   chainId: z.string().refine((chainId) => CHAIN_IDS.includes(parseInt(chainId))),
   // socialPlatform: ProviderTypeSchema,
-  tokenContract: z.string().min(1).refine(isAddress),
+  tokenContract: z.string().min(0),//.refine(isAddress),
   tipString: z.string().min(3, 'Tip string must be at least 3 characters long').startsWith('$', 'Tip string must start with $'),
   publicTimeline: z.boolean().default(false),
+  slug: z.string().min(6, 'Slug must be at least 6 characters').refine((slug) => /^[a-z0-9-]+$/.test(slug), 'Slug must be lowercase and contain only letters, numbers, and hyphens'),
 });
 
 export const AirdropSchema = z.object({

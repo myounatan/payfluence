@@ -1,5 +1,5 @@
 import { and, count, eq } from 'drizzle-orm';
-import { AirdropParticipants, Airdrops, ProductIdSubscriptionTierMap, TipEngines, Users } from './schema';
+import { AirdropParticipants, Airdrops, ProductIdSubscriptionTierMap, RestrictedTipStrings, TipEngines, Users } from './schema';
 import { Airdrop, AirdropParticipant, NewTipEngine, TipEngine, User, UserSubscriptionParams } from './types';
 import { Database } from './database';
 
@@ -32,6 +32,33 @@ export async function setUserSubscription(
 }
 
 // Tip engine queries
+
+export async function isValidTipString(db: Database, tipString: string): Promise<boolean> {
+  // check tip engines for matches
+  const tipEngines = await db.select().from(TipEngines).where(eq(TipEngines.tipString, tipString));
+  const noTipEngineMatches = tipEngines.length === 0;
+
+  const restrictedTipStrings = await db.select().from(RestrictedTipStrings).where(eq(RestrictedTipStrings.tipString, tipString));
+  const noRestrictedTipStringMatches = restrictedTipStrings.length === 0;
+
+  return noTipEngineMatches && noRestrictedTipStringMatches;
+}
+
+export async function isValidSlug(db: Database, slug: string): Promise<boolean> {
+  const result = await db.select().from(TipEngines).where(eq(TipEngines.slug, slug));
+
+  return result.length === 0;
+}
+
+export async function getTipEngineBySlug(db: Database, slug: string): Promise<TipEngine> {
+  const tipEngines = await db.select().from(TipEngines).where(eq(TipEngines.slug, slug));
+
+  if (tipEngines.length === 0) {
+    throw new Error(`Tip engine with slug ${slug} not found`);
+  }
+
+  return tipEngines[0];
+}
 
 export async function getCountActiveTipEngines(db: Database, userId: string): Promise<number> {
   const result: {

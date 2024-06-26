@@ -27,6 +27,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Calendar } from "@ui/components/ui/calendar";
 import { useAccount } from "wagmi";
 import ConnectWalletDialog from "@/components/ConnectWalletDialog";
+import { useAvailableTipEngine } from "@/app/lib/queries";
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 
 const breadcrumbLinks = [
   { route: "/engines", label: "Tip Engines" },
@@ -39,9 +41,12 @@ const PageSchema = z.object({
 })
 
 export default function CreateTipEngine() {
+  const { authToken } = useDynamicContext();
   const { address: walletAddress, isConnected } = useAccount();
 
   const [ownedERC20Contracts, setOwnedERC20Contracts] = useState<string[]>([]);
+
+  const { checkAvailability } = useAvailableTipEngine(authToken);
 
   useEffect(
     () => {
@@ -112,8 +117,33 @@ export default function CreateTipEngine() {
   const removeAirdrop = (index: number) => remove(index);
 
 
-  const onSubmit = (values: z.infer<typeof PageSchema>) => {
-    console.log("boooobs")
+  const onSubmit = async (values: z.infer<typeof PageSchema>) => {
+
+    // check uniqueness of tip string and slug in the database
+    const slug = values.tipEngine.slug;
+    const tipString = values.tipEngine.tipString;
+
+    const { slugAvailable, tipStringAvailable } = await checkAvailability(slug, tipString);
+
+    console.log("slugAvailable", slugAvailable);
+    console.log("tipStringAvailable", tipStringAvailable);
+
+    let anyErrors = false;
+
+    if (!slugAvailable) {
+      anyErrors = true;
+      pageForm.setError("tipEngine.slug", { message: `${slug} is already taken` });
+    }
+
+    if (!tipStringAvailable) {
+      anyErrors = true;
+      pageForm.setError("tipEngine.tipString", { message: `${tipString} is already taken` });
+    }
+
+    if (anyErrors) {
+      return;
+    }
+
     console.log(values);
   }
 
@@ -241,6 +271,27 @@ export default function CreateTipEngine() {
                                 You cannot change this later.
                               </CardDescription>
                             </div>
+                            <FormField
+                              control={pageForm.control}
+                              name="tipEngine.slug"
+                              render={({ field }) => (
+                                <FormItem className="grid gap-0">
+                                  <FormLabel>Public Page URL</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      type="text"
+                                      className="w-full"
+                                      placeholder="memecoin-s1"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormDescription className="text-xs text-muted-foreground">
+                                    payfluence.io/tips/{field.value}
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
                           </div>
                         </CardContent>
                       </Card>

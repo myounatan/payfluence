@@ -88,8 +88,8 @@ app.get('/auth/test', async (c) => {
 // DASHBOARD ROUTES
 
 app.route('/auth/user', userRoute);
-app.route('/auth/user/tipengine', tipEngineRoute);
-app.route('/auth/user/airdrop', airdropRoute);
+app.route('/auth/tipengine', tipEngineRoute);
+app.route('/auth/airdrop', airdropRoute);
 app.route('/auth/web3', web3Route);
 
 // PUBLIC ROUTES

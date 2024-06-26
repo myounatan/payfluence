@@ -1,5 +1,5 @@
 {
-  "id": "e9384ce6-feba-452c-ae70-bc7c4c6e9968",
+  "id": "0fab1bdf-4c1e-4de3-aaa7-d6e2f8a82b35",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -334,6 +334,12 @@
           "notNull": false,
           "default": false
         },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "owner_address": {
           "name": "owner_address",
           "type": "text",
@@ -378,6 +384,13 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
+        "tip_engine_slug_unique": {
+          "name": "tip_engine_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        },
         "tip_engine_tip_string_unique": {
           "name": "tip_engine_tip_string_unique",
           "nullsNotDistinct": false,
