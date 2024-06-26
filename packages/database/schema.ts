@@ -16,7 +16,7 @@ export const ProductIdSubscriptionTierMap = pgTable('product_id_subscription_tie
 
 export const SubscriptionTierFeatures = pgTable('subscription_tier_features', {
   id: integer('id').primaryKey(), // subscription tier integer
-  features: json('feature_json').notNull(), // anything ?
+  feature_json: json('feature_json').notNull(), // anything ?
   // current format: { "numTipEngines": 3, "royalty": 2.5 }
 });
 

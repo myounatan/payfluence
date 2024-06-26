@@ -4,6 +4,13 @@ import dotenv from 'dotenv'
 import { useEffect, useState } from 'react';
 dotenv.config()
 
+const addWalletHeaders = (walletAddress: string) => {
+  return {
+    "X-Wallet-Address": walletAddress,
+    "X-Wallet-Signature": localStorage.getItem("X-Wallet-Signature") || ""
+  }
+}
+
 export const useLocalUser = (authToken: string | undefined): { localUser: User | undefined } => {
   const [localUser, setLocalUser] = useState<User | undefined>(undefined);
 
@@ -54,7 +61,8 @@ export const useOwnedTokens = (
     const fetchApi = async () => {
       const options = {method: 'GET', headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${authToken}`
+        "Authorization": `Bearer ${authToken}`,
+        ...addWalletHeaders(address)
       }};
       fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/web3/erc20/${address}/${MORALIS_CHAIN_NAMES[chainId]}`, options).then(response => response.json()).then(
         jsonData => { console.log(jsonData.data); return setOwnedTokens(jsonData.data) });

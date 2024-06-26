@@ -71,7 +71,7 @@ app.post('/checkout/create', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });
@@ -102,7 +102,7 @@ app.get('/portal/:customerId', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });
@@ -174,7 +174,7 @@ app.post('/webhook/subscription', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     console.log(e.message)
     return new Response(e.message, { status: 500 });
   }
@@ -196,7 +196,7 @@ app.post('/webhook/subscription', async (c) => {
 //       }),
 //       { status: 200 }
 //     );
-//   } catch (e) {
+//   } catch (e: any) {
 //     console.log(e.message)
 //     return new Response(e.message, { status: 500 });
 //   }

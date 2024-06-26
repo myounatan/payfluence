@@ -1,6 +1,6 @@
 import { and, count, eq } from 'drizzle-orm';
-import { AirdropParticipants, Airdrops, ProductIdSubscriptionTierMap, RestrictedTipStrings, TipEngines, Users } from './schema';
-import { Airdrop, AirdropParticipant, NewTipEngine, TipEngine, User, UserSubscriptionParams } from './types';
+import { AirdropParticipants, Airdrops, ProductIdSubscriptionTierMap, RestrictedTipStrings, SubscriptionTierFeatures, TipEngines, Users } from './schema';
+import { Airdrop, AirdropParticipant, NewTipEngine, SubscriptionTierFeature, TipEngine, User, UserSubscriptionParams } from './types';
 import { Database } from './database';
 
 // User queries
@@ -32,6 +32,12 @@ export async function setUserSubscription(
 }
 
 // Tip engine queries
+
+export async function createTipEngine(db: Database, tipEngineParams: NewTipEngine): Promise<TipEngine> {
+  const tipEngine = await db.insert(TipEngines).values(tipEngineParams);
+
+  return tipEngine[0];
+}
 
 export async function isValidTipString(db: Database, tipString: string): Promise<boolean> {
   // check tip engines for matches
@@ -68,6 +74,41 @@ export async function getCountActiveTipEngines(db: Database, userId: string): Pr
   return result[0].count;
 }
 
+export function getUserSubscriptionTier(db: Database, user: UserSubscriptionParams): number {
+  if (user.subscriptionTier === null && user.subscriptionExpiresAt === null) {
+    return 0;
+  }
+
+  // if isSubscribed is false but the subscription hasn't expired, we still consider the user subscribed
+  if (!user.isSubscribed) {
+    if (user.subscriptionTier && user.subscriptionExpiresAt && user.subscriptionExpiresAt > new Date()) {
+      return user.subscriptionTier;
+    }
+    return 0;
+  }
+
+  // otherwise return the subscription tier
+  return user.subscriptionTier || 0;
+}
+
+export async function getTipEngineAllowanceForUser(db: Database, user: User): Promise<number> {
+  const activeTier = getUserSubscriptionTier(db, user);
+
+  if (activeTier === 0) {
+    return 0;
+  }
+
+  const tipEngineCount = await getCountActiveTipEngines(db, user.id);
+
+  const result = await db.select({
+    feature_json: SubscriptionTierFeatures.feature_json,
+  }).from(SubscriptionTierFeatures).where(eq(SubscriptionTierFeatures.id, activeTier));
+
+  const featureJSON = JSON.parse(result[0].feature_json as string);
+
+  return Math.min(0, featureJSON.activeEngineAllowance - tipEngineCount);
+}
+
 export async function getTipEngineById(db: Database, tipEngineId: string): Promise<TipEngine> {
   const tipEngines = await db.select().from(TipEngines).where(eq(TipEngines.id, tipEngineId));
 
@@ -87,12 +128,6 @@ export async function getTipEngineByAirdropId(db: Database, airdropId: string): 
   }
 
   return tipEngines[0];
-}
-
-export async function createTipEngine(db: Database, tipEngineParams: NewTipEngine): Promise<TipEngine> {
-  const tipEngine = await db.insert(TipEngines).values(tipEngineParams);
-
-  return tipEngine[0];
 }
 
 export async function getTipEnginesForUser(db: Database, userId: string): Promise<TipEngine[]> {

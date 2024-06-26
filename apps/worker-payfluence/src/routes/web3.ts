@@ -1,10 +1,11 @@
 import { User } from '@repo/database';
 import { Hono } from 'hono'
 import { Bindings } from 'index';
+import { walletAuth } from 'middleware';
 
 const web3Route = new Hono<{ Bindings: Bindings }>()
 
-web3Route.get('/erc20/:address/:chain', async (c) => {
+web3Route.get('/erc20/:address/:chain', walletAuth, async (c) => {
   try {
     const address = c.req.param('address');
     const chain = c.req.param('chain') || 'base';
@@ -31,7 +32,7 @@ web3Route.get('/erc20/:address/:chain', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });

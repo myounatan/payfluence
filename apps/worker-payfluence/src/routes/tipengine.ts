@@ -1,17 +1,6 @@
-import { Database, User, database, isValidSlug, isValidTipString } from '@repo/database';
+import { CreateTipEngine, CreateTipEngineSchema, Database, TipEngine, TipEngineSchema, User, createTipEngine, database, getTipEngineAllowanceForUser, isValidSlug, isValidTipString } from '@repo/database';
 import { Hono } from 'hono'
-import { Bindings } from 'index';
-
-const getTipEngineAllowance = async (user: User) => {
-  switch (user.subscriptionTier) {
-    case 1:
-      return 1;
-    case 2:
-      return 5;
-    default:
-      return 0;
-  }
-}
+import { Bindings, getUser } from 'index';
 
 const tipEngineRoute = new Hono<{ Bindings: Bindings }>()
 
@@ -30,7 +19,7 @@ tipEngineRoute.get('/lookup/:id', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });
@@ -50,7 +39,7 @@ tipEngineRoute.post('/lookup/:id/setpublish', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });
@@ -61,19 +50,85 @@ tipEngineRoute.post('/create', async (c) => {
     // url query "publish" boolean
     const { publish } = c.req.query();
 
-    const bodyData = await c.req.json();
+    const bodyData: CreateTipEngine = await c.req.json();
+
+    // verify body data with zod schema
+    // errors if invalid
+    await CreateTipEngineSchema.parseAsync(bodyData);
+
+    const db: Database = database(c.env.DATABASE_URL);
+
+    const availableSlug = await isValidSlug(db, bodyData.tipEngine.slug);
+    const availableTipString = await isValidTipString(db, bodyData.tipEngine.tipString);
+
+    // error if slug or tipstring is not available
+    if (!availableSlug) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Slug is not available",
+          data: {
+            availableSlug,
+            availableTipString
+          }
+        }),
+        { status: 400 }
+      );
+    }
+
+    if (!availableTipString) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Tip string is not available",
+          data: {
+            availableSlug,
+            availableTipString
+          }
+        }),
+        { status: 400 }
+      );
+    }
+
+    const user: User = await getUser(c);
+
+    // check tip engine allowance
+    const tipEngineAllowance = await getTipEngineAllowanceForUser(db, user);
+
+    // error if user has no tip engine allowance
+    if (tipEngineAllowance <= 0) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "User has no tip engine allowance",
+          data: {
+            availableSlug,
+            availableTipString
+          }
+        }),
+        { status: 400 }
+      );
+    }
+
+    const tipEngine: TipEngine = await createTipEngine(db, {
+      ...bodyData.tipEngine,
+      chainId: Number(bodyData.tipEngine.chainId),
+      userId: user.id,
+      webhookId: "",
+    });
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "User found",
+        message: "Tip engine created successfully",
         data: {
           
         }
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
+    console.log(e)
     return new Response(e.message, { status: 500 });
   }
 });
@@ -97,7 +152,7 @@ tipEngineRoute.get('/available', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     console.log(e)
     return new Response(e.message, { status: 500 });
   }

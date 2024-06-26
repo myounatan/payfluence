@@ -309,25 +309,6 @@ importers:
         specifier: ^3.9.0
         version: 3.60.3(@cloudflare/workers-types@4.20240605.0)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
 
-  apps/worker-web3:
-    dependencies:
-      hono:
-        specifier: ^4.4.6
-        version: 4.4.6
-    devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20240605.0
-        version: 4.20240605.0
-      '@types/node':
-        specifier: ^20.5.7
-        version: 20.11.24
-      '@types/service-worker-mock':
-        specifier: ^2.0.1
-        version: 2.0.4
-      wrangler:
-        specifier: ^3.9.0
-        version: 3.60.3(@cloudflare/workers-types@4.20240605.0)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-
   packages/config-eslint:
     devDependencies:
       '@vercel/style-guide':
@@ -19350,7 +19331,7 @@ snapshots:
       whatwg-encoding: 2.0.0
       whatwg-mimetype: 3.0.0
       whatwg-url: 11.0.0
-      ws: 8.14.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      ws: 8.17.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       xml-name-validator: 4.0.0
     transitivePeerDependencies:
       - bufferutil
@@ -21457,7 +21438,7 @@ snapshots:
     dependencies:
       eventemitter3: 4.0.7
       uuid: 8.3.2
-      ws: 8.14.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      ws: 8.17.1(bufferutil@4.0.8)(utf-8-validate@5.0.10)
     optionalDependencies:
       bufferutil: 4.0.8
       utf-8-validate: 5.0.10
@@ -22977,11 +22958,6 @@ snapshots:
       bufferutil: 4.0.8
       utf-8-validate: 5.0.10
 
-  ws@8.14.2(bufferutil@4.0.8)(utf-8-validate@5.0.10):
-    optionalDependencies:
-      bufferutil: 4.0.8
-      utf-8-validate: 5.0.10
-
   ws@8.14.2(bufferutil@4.0.8)(utf-8-validate@6.0.4):
     optionalDependencies:
       bufferutil: 4.0.8
@@ -22991,6 +22967,11 @@ snapshots:
     optionalDependencies:
       bufferutil: 4.0.8
       utf-8-validate: 5.0.10
+
+  ws@8.17.1(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+    optionalDependencies:
+      bufferutil: 4.0.8
+      utf-8-validate: 6.0.4
 
   ws@8.5.0(bufferutil@4.0.8)(utf-8-validate@6.0.4):
     optionalDependencies:

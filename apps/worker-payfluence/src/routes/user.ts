@@ -25,7 +25,7 @@ userRoute.get('/local', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     console.log("/local")
     console.log(e)
     return new Response(e.message, { status: 500 });

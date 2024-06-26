@@ -1,8 +1,10 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { useConnect, useAccount, useDisconnect } from 'wagmi';
-import { injected } from '@wagmi/core';
+import { injected, signMessage } from '@wagmi/core';
 import { walletConnect } from '@wagmi/connectors';
 import dotenv from 'dotenv';
+import { wagmiConfig } from '@/config/web3';
+import { SignableMessage } from 'viem';
 dotenv.config();
  
 export type WalletType = "metamask" | "walletConnect";
@@ -27,6 +29,41 @@ const WalletContextProvider = ({ children }: WalletContextProviderProps) => {
   const { address, isConnected, chainId } = useAccount()
   const { disconnect } = useDisconnect()
 
+  const [ waitingForSignature, setWaitingForSignature ] = React.useState(false);
+
+  useEffect(() => {
+    if (isConnected) {
+      if (waitingForSignature) {
+        return
+      }
+
+      if (localStorage.getItem("X-Wallet-Signature") !== null) {
+        return
+      }
+
+      console.log("Connected to wallet", address, chainId)
+
+      setWaitingForSignature(true)
+
+      // sign message to verify wallet
+      const signableMessage = Buffer.from("X-Wallet-Signature", "utf8").toString('hex')
+      console.log("Signable message", signableMessage)
+      signMessage(wagmiConfig, { message: signableMessage.toString() }).then((signature) => {
+        console.log("Signature", signature)
+
+        localStorage.setItem("X-Wallet-Signature", signature)
+      }).catch((e) => {
+        console.error("Failed to sign message", e)
+
+        disconnect();
+      }).finally(() => {
+        setWaitingForSignature(false)
+      });
+    } else {
+      console.log("Disconnected from wallet")
+    }
+  }, [isConnected, address, chainId])
+
   const connectWallet = async (walletType: WalletType) => {
     try {
 
@@ -39,7 +76,7 @@ const WalletContextProvider = ({ children }: WalletContextProviderProps) => {
       }
 
 
-    } catch (e) {
+    } catch (e: any) {
 
       console.error("failed to connect", e);
 

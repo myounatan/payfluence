@@ -39,7 +39,7 @@ airdropRoute.get('/signature/:airdropId/:receiverId', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });
@@ -62,7 +62,7 @@ airdropRoute.post('/create/:id', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });

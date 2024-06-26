@@ -25,7 +25,7 @@ publicRoute.get('/airdrop/:id/leaderboard', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });
@@ -43,7 +43,7 @@ publicRoute.get('/airdrop/:id/profile/:fid', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });
@@ -61,7 +61,7 @@ publicRoute.get('/airdrop/:id/allowance/:fid', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });
@@ -79,7 +79,7 @@ publicRoute.get('/airdrop/:id/sent/:fid', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });
@@ -97,7 +97,7 @@ publicRoute.get('/airdrop/:id/received/:fid', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });
@@ -203,7 +203,7 @@ publicRoute.post('/airdrop/:airdropId/signature/:receiverId', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });
@@ -250,7 +250,7 @@ publicRoute.get('/signature/:airdropId/:receiverId', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     return new Response(e.message, { status: 500 });
   }
 });

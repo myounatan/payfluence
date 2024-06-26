@@ -52,6 +52,7 @@ export default function TokenSelectorDialog({ title, description, tokens, callba
               <div className="flex flex-col gap-3">
                 {tokens.map((token) => (
                     <Card
+                      key={token.token_address}
                       className={cn(
                         selectedToken === token.token_address ? "bg-slate-300 hover:bg-slate-300" : "bg-slate-50 hover:bg-slate-100",
                         "flex flex-row border-none items-center py-1 px-2 cursor-pointer"

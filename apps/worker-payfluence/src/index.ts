@@ -11,6 +11,8 @@ import userRoute from 'routes/user';
 import * as jose from 'jose'
 import { User, database, getUserByEmail } from '@repo/database';
 import web3Route from 'routes/web3';
+import { dynamicAuth } from 'middleware';
+
 
 // .dev.vars for dev and cloudflare dashboard for prod
 export type Bindings = {
@@ -29,40 +31,19 @@ export type Bindings = {
 
 // type Variables = JwtVariables
 
+
 const app = new Hono<{ Bindings: Bindings }>()
 app.fire()
 
-app.use('*', cors({
+app.use(cors({
   origin: '*',
-  allowHeaders: ['Origin', 'Content-Type', 'Authorization'],
+  allowHeaders: ['Origin', 'Content-Type', 'Authorization', 'X-Wallet-Address', 'X-Wallet-Signature'],
   allowMethods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }))
 
 // add dynamic.xyz jwt verification to any route with /auth prefix
-app.use('/auth/*', async (c, next) => {
-  const bearerToken = c.req.header('Authorization')
-  if (!bearerToken) {
-    return new Response("Unauthorized, missing bearer token", { status: 401 })
-  }
-
-  const alg = 'RS256'
-  const spki = c.env.DYNAMIC_XYZ_PUBLIC_KEY
-  const publicKey = await jose.importSPKI(spki, alg)
-  const jwt = bearerToken.split(' ')[1]
-    
-  const { payload, protectedHeader } = await jose.jwtVerify(jwt, publicKey, {})
-  
-  // console.log(protectedHeader)
-  console.log(payload)
-
-  // add email to context
-
-  const email: string = payload.verified_credentials[0].email
-  c.set('email' as never, email)
-
-  await next()
-})
+app.use('/auth/*', dynamicAuth)
 
 export const getUser = async (c: Context) => {
   const email: string = c.get('email' as never)

@@ -19,7 +19,7 @@ import HeaderNav from "@/components/HeaderNav";
 import SimpleDialog from "@/components/SimpleDialog";
 import { useEffect, useState } from "react";
 import { cn } from "@ui/lib/utils";
-import { AirdropSchema, CHAIN_ID_NAME_MAP, CHAIN_NAMES, TipEngineSchema } from "@repo/database/types"
+import { AirdropSchema, CHAIN_ID_NAME_MAP, CHAIN_NAMES, CreateTipEngineSchema, TipEngineSchema } from "@repo/database/types"
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
@@ -39,10 +39,6 @@ const breadcrumbLinks = [
   { route: "#", label: "Create" },
 ]
 
-const PageSchema = z.object({
-  tipEngine: TipEngineSchema,
-  airdrops: z.array(AirdropSchema).min(1),
-})
 
 export default function CreateTipEngine() {
   const { authToken } = useDynamicContext();
@@ -67,13 +63,14 @@ export default function CreateTipEngine() {
   const dayAfterTomorrow = new Date(today);
   dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
 
-  const pageForm = useForm<z.infer<typeof PageSchema>>({
-    resolver: zodResolver(PageSchema),
+  const pageForm = useForm<z.infer<typeof CreateTipEngineSchema>>({
+    resolver: zodResolver(CreateTipEngineSchema),
     defaultValues: {
       tipEngine: {
         name: "",
         chainId: "84532",
         tokenContract: "",
+        ownerAddress: walletAddress,
         tipString: "",
         publicTimeline: false,
       },
@@ -89,10 +86,20 @@ export default function CreateTipEngine() {
     },
   })
 
+  // use effect for setting ownerAddress as walletAddress
+  useEffect(() => {
+    if (walletAddress) {
+      pageForm.setValue("tipEngine.ownerAddress", walletAddress);
+      pageForm.clearErrors("tipEngine.ownerAddress");
+    } else {
+      pageForm.setError("tipEngine.ownerAddress", { message: "Please connect your wallet" });
+    }
+  }, [walletAddress])
+
   const requestSwitchChain = async () => {
     try {
       await switchChain(wagmiConfig, { chainId: CHAIN_ID_TO_WAGMI_CHAIN_ID[requiredChainId] });
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error switching chain:');
       console.error(e);
     }
@@ -164,7 +171,7 @@ export default function CreateTipEngine() {
   const removeAirdrop = (index: number) => remove(index);
 
 
-  const onSubmit = async (values: z.infer<typeof PageSchema>) => {
+  const onSubmit = async (values: z.infer<typeof CreateTipEngineSchema>) => {
     setLoadingNext(true);
 
     // check uniqueness of tip string and slug in the database

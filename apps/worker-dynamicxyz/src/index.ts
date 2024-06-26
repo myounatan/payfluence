@@ -50,7 +50,7 @@ app.post('/user/create', async (c) => {
     let user = undefined;
     try {
       user = await getUserByEmail(db, email);
-    } catch (e) {
+    } catch (e: any) {
       // console.log(e)
     }
 
@@ -73,7 +73,7 @@ app.post('/user/create', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
     console.log(e)
     return new Response(e.message, { status: 500 });
   }
