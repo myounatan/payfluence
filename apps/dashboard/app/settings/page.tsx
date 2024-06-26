@@ -43,6 +43,7 @@ import { Label } from "@ui/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
 import { z } from "zod"
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 
 const breadcrumbLinks = [
   { route: "#", label: "Settings" },
@@ -99,28 +100,42 @@ const defaultValues: Partial<ProfileFormValues> = {
   ],
 }
 
+const products = [
+  {
+    name: 'Basic',
+    description: 'At most one active tip engine',
+    productId: '419750',
+  },
+  {
+    name: 'Pro',
+    description: 'Many active tip engines',
+    productId: '419751',
+  },
+]
+
 export default function Settings() {
 
   const { user } = useDynamicContext();
 
-
-
-  const res = await fetch("lemonsqueezy.matyounatan.workers.dev/checkout/create", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email: user?.email,
-      productId: "<the product id>?>"
+  async function getCheckoutUrl() {
+    const res = await fetch("https://lemonsqueezy.matyounatan.workers.dev/checkout/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: user?.email,
+        productId: "<the product id>?>"
+      })
     })
-  })
-
-  const data = await res.json()
-
-  console.log(data)
-
-  data.data.checkoutUrl
+  
+    const data = await res.json()
+  
+    console.log(data)
+  
+    data.data.checkoutUrl // check how to 
+    
+  }
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -438,7 +453,7 @@ export default function Settings() {
                         </TableRow>
                       </TableBody>
                   </Table>
-                  <Button type="submit">Manage Subscription</Button>
+                  <Button type="submit" onClick={() => getCheckoutUrl()}>Manage Subscription</Button>
                 </CardContent>
                 <CardFooter>
                   <div className="text-xs text-muted-foreground">
