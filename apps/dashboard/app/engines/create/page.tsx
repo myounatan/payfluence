@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link"
-import { format } from "date-fns"
+import { format, min, set } from "date-fns"
 import SidebarNav from "@/components/SidebarNav";
 import { Button } from "@repo/ui/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem } from "@repo/ui/components/ui/dropdown-menu";
@@ -143,11 +143,11 @@ export default function CreateTipEngine() {
     }
   }, [selectedTokenAddress])
 
-  const [minTokenBalanceEnabled, setMinTokenBalanceEnabled] = useState(pageForm.getValues("airdrops")[0]["minTokens"] > 0);
-  const [minCastsEnabled, setMinCastsEnabled] = useState(false);
+  const [minTokenBalanceEnabled, setMinTokenBalanceEnabled] = useState<Record<number, boolean>>({ 0: pageForm.getValues("airdrops")[0]["minTokens"] > 0 });
+  const [minCastsEnabled, setMinCastsEnabled] = useState<Record<number, boolean>>({ 0: pageForm.getValues("airdrops")[0]["minCasts"] > 0 });
 
   const handleMinTokenBalanceSwitchChange = (airdropIndex: number, checked: boolean) => {
-    setMinTokenBalanceEnabled(checked);
+    setMinTokenBalanceEnabled((prev) => ({ ...prev, [airdropIndex]: checked }));
 
     if (!checked) {
       pageForm.setValue(`airdrops.${airdropIndex}.minTokens`, 0);
@@ -155,7 +155,7 @@ export default function CreateTipEngine() {
   }
 
   const handleMinCastsRequiredSwitchChange = (airdropIndex: number, checked: boolean) => {
-    setMinCastsEnabled(checked);
+    setMinCastsEnabled((prev) => ({ ...prev, [airdropIndex]: checked }));
 
     if (!checked) {
       pageForm.setValue(`airdrops.${airdropIndex}.minCasts`, 0);
@@ -167,9 +167,79 @@ export default function CreateTipEngine() {
     name: "airdrops",
   });
 
-  const addAirdrop = () => append({ startDate: new Date(), claimStartDate: new Date(), claimEndDate: new Date(), pointsToTokenRatio: 10, requireLegacyAccount: false, requirePowerBadge: false, minTokens: 0, minCasts: 0 });
-  const removeAirdrop = (index: number) => remove(index);
+  // airdrop appended must have dates that are after the previous airdrop
+  const appendAirdrop = (indexToCopy?: number) => {
+    const lastAirdropIndex = fields.length - 1
 
+    const startDate = new Date(pageForm.getValues(`airdrops.${lastAirdropIndex}.startDate`));
+    const claimStartDate = new Date(pageForm.getValues(`airdrops.${lastAirdropIndex}.claimEndDate`));
+    const claimEndDate = new Date(pageForm.getValues(`airdrops.${lastAirdropIndex}.claimEndDate`));
+    claimEndDate.setDate(claimEndDate.getDate() + 1);
+
+    startDate.setDate(startDate.getDate() + 1);
+    claimStartDate.setDate(claimStartDate.getDate() + 1);
+    claimEndDate.setDate(claimEndDate.getDate() + 1);
+
+    const appendValues = {
+      startDate,
+      claimStartDate,
+      claimEndDate,
+      pointsToTokenRatio: indexToCopy !== undefined ? pageForm.getValues(`airdrops.${indexToCopy}.pointsToTokenRatio`) : 10,
+      requireLegacyAccount: indexToCopy !== undefined ? pageForm.getValues(`airdrops.${indexToCopy}.requireLegacyAccount`) : true,
+      requirePowerBadge: indexToCopy !== undefined ? pageForm.getValues(`airdrops.${indexToCopy}.requirePowerBadge`) : true,
+      minTokens: indexToCopy !== undefined ? pageForm.getValues(`airdrops.${indexToCopy}.minTokens`) : 10000,
+      minCasts: indexToCopy !== undefined ? pageForm.getValues(`airdrops.${indexToCopy}.minCasts`) : 0,
+    }
+
+    // set min token balance and min casts enabled
+    setMinTokenBalanceEnabled((prev) => ({ ...prev, [fields.length]: indexToCopy !== undefined ? minTokenBalanceEnabled[indexToCopy] : appendValues.minTokens > 0 }));
+    setMinCastsEnabled((prev) => ({ ...prev, [fields.length]: indexToCopy !== undefined ? minCastsEnabled[indexToCopy] : appendValues.minCasts > 0 }));
+
+    append(appendValues);
+  }
+
+  const removeAirdrop = (index: number) => {
+    if (fields.length === 1) {
+      return;
+    }
+
+    console.log("removing", index)
+
+    remove(index);
+
+    // remove min token balance and min casts enabled, if we are removing an index that has consecutive indexes after it, we need to shift the enabled state
+    const minTokenBalanceEnabledCopy = { ...minTokenBalanceEnabled };
+    const minCastsEnabledCopy = { ...minCastsEnabled };
+
+    delete minTokenBalanceEnabledCopy[index];
+    delete minCastsEnabledCopy[index];
+
+    const minTokenBalanceEnabledCopyShifted: Record<number, boolean> = {}
+    const minCastsEnabledCopyShifted: Record<number, boolean> = {}
+
+    Object.entries(minTokenBalanceEnabledCopy).forEach(([key, value]) => {
+      if (parseInt(key) > index) {
+        minTokenBalanceEnabledCopyShifted[parseInt(key) - 1] = value;
+      } else {
+        minTokenBalanceEnabledCopyShifted[parseInt(key)] = value;
+      }
+    })
+
+    Object.entries(minCastsEnabledCopy).forEach(([key, value]) => {
+      if (parseInt(key) > index) {
+        minCastsEnabledCopyShifted[parseInt(key) - 1] = value;
+      } else {
+        minCastsEnabledCopyShifted[parseInt(key)] = value;
+      }
+    })
+
+    setMinTokenBalanceEnabled(minTokenBalanceEnabledCopyShifted);
+    setMinCastsEnabled(minCastsEnabledCopyShifted);
+
+
+    console.log("current points to token ratio")
+    console.log(pageForm.getValues(`airdrops.${index}.pointsToTokenRatio`))
+  }
 
   const onSubmit = async (values: z.infer<typeof CreateTipEngineSchema>) => {
     setLoadingNext(true);
@@ -195,11 +265,32 @@ export default function CreateTipEngine() {
       pageForm.setError("tipEngine.tipString", { message: `${tipString} is already taken` });
     }
 
+    // check previous airdrop dates are before the next airdrop dates, we dont care about claim end date for any airdrop
+    // how it works: airdrop1.startDate < airdrop1.claimStartDate < airdrop2.startDate < airdrop2.claimStartDate < airdrop3.startDate < airdrop3.claimStartDate and so on
+    // we probably need a doulbe loop for this
+    for (let i = 0; i < values.airdrops.length - 1; i++) {
+      for (let j = i + 1; j < values.airdrops.length; j++) {
+        const airdrop1 = values.airdrops[i];
+        const airdrop2 = values.airdrops[j];
+
+        if (airdrop1.startDate >= airdrop2.startDate) {
+          anyErrors = true;
+          pageForm.setError(`airdrops.${i}.startDate`, { message: "Start date must be before the next airdrop's start date" });
+        }
+
+        if (airdrop1.claimStartDate >= airdrop2.claimStartDate) {
+          anyErrors = true;
+          pageForm.setError(`airdrops.${i}.claimStartDate`, { message: "Claim start date must be before the next airdrop's claim start date" });
+        }
+      }
+    }
+
+    setLoadingNext(false);
+    
     if (anyErrors) {
       return;
     }
 
-    setLoadingNext(false);
 
     console.log(values);
   }
@@ -316,7 +407,7 @@ export default function CreateTipEngine() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="farcaster">Farcaster</SelectItem>
-                              <SelectItem value="twitter" disabled>
+                              <SelectItem value="telegram" disabled>
                                 Telegram
                                 <Badge variant="outline" className="ml-auto sm:ml-0">
                                   Coming Soon
@@ -478,7 +569,7 @@ export default function CreateTipEngine() {
                         <span className="flex flex-auto">
                           Airdrop Timeline
                         </span>
-                          <Button className="" size="xs" variant="outline" type="button">
+                          <Button className="" size="xs" variant="outline" type="button" onClick={() => {appendAirdrop()}}>
                             <Plus className="h-3.5 w-3.5" />
                             Add
                           </Button>
@@ -488,7 +579,7 @@ export default function CreateTipEngine() {
                     <CardContent>
                       <div className="grid gap-6 gap">
 
-                        <FormField
+                        {/* <FormField
                           control={pageForm.control}
                           name="tipEngine.publicTimeline"
                           render={({ field }) => (
@@ -511,22 +602,22 @@ export default function CreateTipEngine() {
                               </div>
                             </FormItem>
                           )}
-                        />
+                        /> */}
 
                         <div className="grid gap-3">
-                          {fields.map((field, index) => (
+                          {fields.map((airdrop, index) => (
                             <Card>
                               <CardHeader>
                                 <CardTitle className="flex flex-auto">
                                   <span className="flex flex-auto">
-                                  Airdrop 1
+                                  Airdrop {index + 1}
                                   </span>
                                   <div className="flex flex-row space-x-2">
-                                    <Button size="xs" variant="ghost" className="ml-auto">
+                                    <Button type="button" size="xs" variant="ghost" className="ml-auto" onClick={() => {appendAirdrop(index)}}>
                                       <Copy className="h-3.5 w-3.5" />
                                       Duplicate
                                     </Button>
-                                    <Button size="xs" variant="ghost" className="ml-auto" disabled>
+                                    <Button type="button" size="xs" variant="ghost" className="ml-auto" disabled={fields.length === 1} onClick={() => removeAirdrop(index)}>
                                       <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
                                   </div>
@@ -536,6 +627,7 @@ export default function CreateTipEngine() {
                                 <div className="grid gap-6 gap">
                                   <div className="grid gap-3">
                                     <FormField
+                                      key={`${airdrop.id}-${index}-1`}
                                       control={pageForm.control}
                                       name={`airdrops.${index}.startDate`}
                                       render={({ field }) => (
@@ -580,6 +672,7 @@ export default function CreateTipEngine() {
                                       <ArrowDown className="h-5 w-5" />
                                     </div>
                                     <FormField
+                                      key={`${airdrop.id}-${index}-2`}
                                       control={pageForm.control}
                                       name={`airdrops.${index}.claimStartDate`}
                                       render={({ field }) => (
@@ -624,6 +717,7 @@ export default function CreateTipEngine() {
                                       <ArrowDown className="h-5 w-5" />
                                     </div>
                                     <FormField
+                                      key={`${airdrop.id}-${index}-3`}
                                       control={pageForm.control}
                                       name={`airdrops.${index}.claimEndDate`}
                                       render={({ field }) => (
@@ -666,6 +760,7 @@ export default function CreateTipEngine() {
                                     />
                                   </div>
                                   <FormField
+                                      key={`${airdrop.id}-${index}-4`}
                                       control={pageForm.control}
                                       name={`airdrops.${index}.pointsToTokenRatio`}
                                       render={({ field }) => (
@@ -712,13 +807,14 @@ export default function CreateTipEngine() {
                                     </Label>
                                   </div>
                                   <FormField
+                                    key={`${airdrop.id}-${index}-5`}
                                     control={pageForm.control}
                                     name={`airdrops.${index}.requireLegacyAccount`}
                                     render={({ field }) => (
                                       <FormItem className="grid gap-0">
                                         <div className="flex flex-row items-center gap-4">
                                           <FormControl>
-                                            <Switch id="public-timeline"
+                                            <Switch id="legacy-account"
                                               onCheckedChange={field.onChange}
                                               checked={field.value}
                                             />
@@ -735,13 +831,14 @@ export default function CreateTipEngine() {
                                     )}
                                   />
                                   <FormField
+                                    key={`${airdrop.id}-${index}-6`}
                                     control={pageForm.control}
                                     name={`airdrops.${index}.requirePowerBadge`}
                                     render={({ field }) => (
                                       <FormItem className="grid gap-0">
                                         <div className="flex flex-row items-center gap-4">
                                           <FormControl>
-                                            <Switch id="public-timeline"
+                                            <Switch id="power-badge"
                                               onCheckedChange={field.onChange}
                                               checked={field.value}
                                             />
@@ -758,13 +855,14 @@ export default function CreateTipEngine() {
                                     )}
                                   />
                                   <FormField
+                                    key={`${airdrop.id}-${index}-7`}
                                     control={pageForm.control}
                                     name={`airdrops.${index}.minTokens`}
                                     render={({ field }) => (
                                       <div className="grid gap-0">
                                         <div className="flex flex-row items-center gap-4">
-                                          <Switch id="public-timeline" checked={minTokenBalanceEnabled} onCheckedChange={(checked) => handleMinTokenBalanceSwitchChange(index, checked)} />
-                                          <div className={cn("flex flex-col gap-2 w-full", !minTokenBalanceEnabled && "opacity-50")}>
+                                          <Switch id="min-tokens" checked={minTokenBalanceEnabled[index]} onCheckedChange={(checked) => handleMinTokenBalanceSwitchChange(index, checked)} />
+                                          <div className={cn("flex flex-col gap-2 w-full", !minTokenBalanceEnabled[index] && "opacity-50")}>
                                             <Label>Min. Token Balance</Label>
                                             <CardDescription>
                                             Participants must hold a minimum balance of the funded token.
@@ -775,24 +873,26 @@ export default function CreateTipEngine() {
                                             <Input
                                               type="text"
                                               className="w-[120px]"
-                                              disabled={!minTokenBalanceEnabled}
+                                              disabled={!minTokenBalanceEnabled[index]}
                                               value={field.value}
                                               onChange={field.onChange}
                                             />
                                           </FormControl>
                                           </FormItem>
                                         </div>
+                                        <FormMessage />
                                       </div>
                                     )}
                                   />
                                   <FormField
+                                    key={`${airdrop.id}-${index}-8`}
                                     control={pageForm.control}
                                     name={`airdrops.${index}.minCasts`}
                                     render={({ field }) => (
                                       <FormItem className="grid gap-0">
                                         <div className="flex flex-auto items-center gap-4">
-                                          <Switch id="public-timeline" checked={minCastsEnabled} onCheckedChange={(checked) => handleMinCastsRequiredSwitchChange(index, checked)} />
-                                          <div className={cn("flex flex-col gap-2 w-full", !minCastsEnabled && "opacity-50")}>
+                                          <Switch id="min-casts" checked={minCastsEnabled[index]} onCheckedChange={(checked) => handleMinCastsRequiredSwitchChange(index, checked)} />
+                                          <div className={cn("flex flex-col gap-2 w-full", !minCastsEnabled[index] && "opacity-50")}>
                                             <Label>Min. Casts</Label>
                                             <CardDescription>
                                             Participants are required to have posted to Farcaster.
@@ -808,6 +908,7 @@ export default function CreateTipEngine() {
                                             />
                                           </FormControl>
                                         </div>
+                                        <FormMessage />
                                       </FormItem>
                                     )}
                                   />

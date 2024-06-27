@@ -72,7 +72,7 @@ export const AirdropSchema = z.object({
   requireLegacyAccount: z.boolean().default(true),
   requirePowerBadge: z.boolean().default(true),
   minTokens: z.coerce.number().min(0, 'Minimum tokens must be at least 0'),
-  minCasts: z.coerce.number().min(0),
+  minCasts: z.coerce.number().min(0).max(10, 'Minimum casts must be between 0 and 10'),
 });
 
 export const CreateTipEngineSchema = z.object({

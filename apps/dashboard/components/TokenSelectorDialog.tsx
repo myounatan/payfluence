@@ -1,3 +1,4 @@
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core"
 import { Button } from "@ui/components/ui/button"
 import { Card } from "@ui/components/ui/card"
 import {
@@ -29,6 +30,7 @@ interface TokenSelectorDialogProps {
 
 export default function TokenSelectorDialog({ title, description, tokens, callback, children }: TokenSelectorDialogProps) {
   const [selectedToken, setSelectedToken] = useState<string | null>(null)
+  const { user } = useDynamicContext()
 
   return (
     <Dialog>
@@ -44,8 +46,14 @@ export default function TokenSelectorDialog({ title, description, tokens, callba
         </DialogHeader>
         {tokens.length == 0 ? (
           <div className="p-4 text-center flex flex-col">
-            <span className="text-center">No tokens found {":("}</span>
-            <span className="text-center">You can try connecting a different wallet.</span>
+            {!user?.email ? (
+              <span className="text-center">Please login to view tokens</span>
+            ) : (
+              <>
+                <span className="text-center">No tokens found {":("}</span>
+                <span className="text-center">You can try connecting a different wallet.</span>
+              </>
+            )}
           </div>
         ) : (
             <ScrollArea className="h-72 w-full rounded-md grid grid-cols-1 gap-2">

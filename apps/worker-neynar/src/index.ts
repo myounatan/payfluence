@@ -1,9 +1,8 @@
 import { Hono, HonoRequest } from 'hono'
 
-import { AirdropParticipant, createAirdropParticipant, database, getAirdropParticipantByIds, getBalanceOf, getDailyBudgetForSenderId, getTipEngineActiveAirdrops, getTipEngineByTipString, getTotalAmountTippedBetweenDatesForSender, incrementAirdropParticipantPoints } from "@repo/database";
+import { AirdropParticipant, createAirdropParticipant, database, fetchDailyAllowance, getAirdropParticipantByIds, getBalanceOf, getDailyBudgetForSenderId, getTipEngineActiveAirdrops, getTipEngineByTipString, getTotalAmountTippedBetweenDatesForSender, getUserAccountAge, incrementAirdropParticipantPoints } from "@repo/database";
 import { CastWebhookSchema } from 'types';
 import { InferType } from 'yup';
-import { fetchDailyAllowance, getUserCreatedDate } from 'api';
 
 // const { createHmac } = require("node:crypto")
 
@@ -34,6 +33,7 @@ STEP 6) check airdrop security requirements
   a) check if sender has a legacy account
   b) check if sender has a power badge
   c) check if sender has the minimum balance required
+  d) check if sender has the minimum number of casts created
 STEP 7) create or update airdrop participant points
 
 */
@@ -91,6 +91,10 @@ app.post('/cast/created', async (c) => {
       return new Response("Parent fid is required", { status: 200 });
     }
 
+    if (senderFid === parentFid) {
+      return new Response("Sender and parent fid are the same, can not tip yourself!", { status: 200 });
+    }
+
     console.log('parent fid', parentFid);
 
     // STEP 4
@@ -128,9 +132,9 @@ app.post('/cast/created', async (c) => {
 
     // STEP 6a
     if (airdrop.requireLegacyAccount) {
-      const createdAtDate = await getUserCreatedDate(c.env.NEYNAR_API_KEY, senderFid);
+      const { signUpDate } = await getUserAccountAge(c.env.NEYNAR_API_KEY, senderFid);
 
-      if (createdAtDate > airdrop.startDate) {
+      if (signUpDate > airdrop.startDate) {
         console.log("Sender does not have a legacy account")
         return new Response("Sender does not have a legacy account", { status: 200 });
       }
@@ -164,7 +168,6 @@ app.post('/cast/created', async (c) => {
         // }
       }
     }
-
 
     // STEP 7
     let airdropParticipant: AirdropParticipant;
