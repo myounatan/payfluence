@@ -81,7 +81,8 @@ export const TipEngines = pgTable('tip_engine', {
   chainId: integer('chain_id').notNull(),
 
   webhookId: text('webhook_id').notNull(),
-  webhookActive: boolean('webhook_active').default(false),
+  webhookActive: boolean('webhook_active').notNull().default(false),
+  webhookSecret: text('webhook_secret'),
 
   slug: text('slug').notNull().unique(),
 

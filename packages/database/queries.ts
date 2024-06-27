@@ -31,6 +31,23 @@ export async function setUserSubscription(
    }).where(eq(Users.email, email));
 }
 
+export function getUserSubscriptionTier(db: Database, user: UserSubscriptionParams): number {
+  if (user.subscriptionTier === null && user.subscriptionExpiresAt === null) {
+    return 0;
+  }
+
+  // if isSubscribed is false but the subscription hasn't expired, we still consider the user subscribed
+  if (!user.isSubscribed) {
+    if (user.subscriptionTier && user.subscriptionExpiresAt && user.subscriptionExpiresAt > new Date()) {
+      return user.subscriptionTier;
+    }
+    return 0;
+  }
+
+  // otherwise return the subscription tier
+  return user.subscriptionTier || 0;
+}
+
 // Tip engine queries
 
 export async function createTipEngine(db: Database, tipEngineParams: NewTipEngine): Promise<TipEngine> {
@@ -72,23 +89,6 @@ export async function getCountActiveTipEngines(db: Database, userId: string): Pr
   }[] = await db.select({ count: count() }).from(TipEngines).where(and(eq(TipEngines.userId, userId), eq(TipEngines.webhookActive, true)));
 
   return result[0].count;
-}
-
-export function getUserSubscriptionTier(db: Database, user: UserSubscriptionParams): number {
-  if (user.subscriptionTier === null && user.subscriptionExpiresAt === null) {
-    return 0;
-  }
-
-  // if isSubscribed is false but the subscription hasn't expired, we still consider the user subscribed
-  if (!user.isSubscribed) {
-    if (user.subscriptionTier && user.subscriptionExpiresAt && user.subscriptionExpiresAt > new Date()) {
-      return user.subscriptionTier;
-    }
-    return 0;
-  }
-
-  // otherwise return the subscription tier
-  return user.subscriptionTier || 0;
 }
 
 export async function getTipEngineAllowanceForUser(db: Database, user: User): Promise<number> {
@@ -142,6 +142,14 @@ export async function getTipEngineByTipString(db: Database, tipString: string): 
   }
 
   return tipEngines[0];
+}
+
+export async function setTipEngineWebhook(db: Database, tipEngineId: string, webhookId: string, webhookActive: boolean, webhookSecret?: string) {
+  await db.update(TipEngines).set({
+    webhookId,
+    webhookActive,
+    webhookSecret: webhookSecret || null,
+  }).where(eq(TipEngines.id, tipEngineId));
 }
 
 // Airdrop queries
@@ -239,12 +247,6 @@ export async function getTotalAmountTippedBetweenDatesForSender(db: Database, se
 
 //   return Number(result[0].totalAmountTipped);
 // }
-
-// DAILY BUDGET CALCULATION
-
-export async function getDailyBudgetForSenderId(): Promise<number> {
-  return 2000;
-}
 
 export async function getBalanceOf(rpcUrl: string, walletAddress: string, tokenContract: string) {
   const balanceOfSelector = "0x70a08231";

@@ -28,6 +28,8 @@ export type Bindings = {
   CHAIN_ID: string
   MORALIS_API_KEY: string
   DAILY_ALLOWANCE_ENDPOINT: string
+  NEYNAR_API_KEY: string
+  PAYFLUENCE_NEYNAR_WEBHOOK_URL: string
 }
 
 // type Variables = JwtVariables

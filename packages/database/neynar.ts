@@ -1,5 +1,7 @@
 // neynar api
 
+import { TipEngine } from "./types";
+
 export const getUserAccountAge = async (neynarAPIKey: string, fid: string): Promise<{signUpDate: Date, ageInDays: number}> => {
   const url = `https://api.neynar.com/v2/farcaster/storage/allocations?fid=${fid}`;
   const options = {
@@ -73,4 +75,55 @@ export const fetchDailyAllowance = async (endpoint: string, fid: string): Promis
   console.log(data)
 
   return data.allowance;
+}
+
+// webhook creation
+
+export const createNeynarWebhook = async (neynarAPIKey: string, webhookUrl: string, tipEngine: TipEngine) => {
+
+  const strippedTipString = tipEngine.tipString.substring(1);
+
+  const url = 'https://api.neynar.com/v2/farcaster/webhook';
+  const options = {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      api_key: neynarAPIKey,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      subscription: {'cast.created': {text: `\$(${strippedTipString.toUpperCase}|${strippedTipString.toLowerCase()})`}},
+      name: tipEngine.id,
+      url: webhookUrl
+    })
+  };
+  
+  const response = await fetch(url, options)
+
+  if (response.status !== 200) {
+    console.log("neynar webhook creation failed")
+    throw Error("Webhook creation failed")
+  }
+
+  console.log("neynar webhook created")
+  console.log(await response.json())
+
+  return await response.json();
+}
+
+export const deleteNeynarWebhook = async (neynarAPIKey: string, webhookId: string): Promise<boolean> => {
+  const url = 'https://api.neynar.com/v2/farcaster/webhook';
+  const options = {
+    method: 'DELETE',
+    headers: {
+      accept: 'application/json',
+      api_key: neynarAPIKey,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({webhook_id: webhookId})
+  };
+
+  const response = await fetch(url, options)
+
+  return response.status === 200 ? true : false;
 }
