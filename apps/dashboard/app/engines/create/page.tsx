@@ -356,7 +356,7 @@ export default function CreateTipEngine() {
                         Asset Management
                       </CardTitle>
                       <CardDescription>
-                        You can add funds in the next step.
+                        Select the token you want to distribute in airdrops. You can transfer funds later.
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
