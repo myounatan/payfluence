@@ -24,6 +24,10 @@ export const walletAuth = createMiddleware(async (c, next) => {
     }
   }
 
+  if (!c.get('walletAddress' as never)) {
+    return new Response("Unauthorized, missing wallet signature", { status: 401 })
+  }
+
   await next()
 })
 

@@ -1,6 +1,7 @@
 import { CreateTipEngine, CreateTipEngineSchema, Database, TipEngine, TipEngineSchema, User, createTipEngine, database, getTipEngineAllowanceForUser, isValidSlug, isValidTipString } from '@repo/database';
 import { Hono } from 'hono'
 import { Bindings, getUser } from 'index';
+import { walletAuth } from 'middleware';
 
 const tipEngineRoute = new Hono<{ Bindings: Bindings }>()
 
@@ -45,7 +46,7 @@ tipEngineRoute.post('/lookup/:id/setpublish', async (c) => {
 });
 
 // create tip engine
-tipEngineRoute.post('/create', async (c) => {
+tipEngineRoute.post('/create', walletAuth, async (c) => {
   try {
     // url query "publish" boolean
     const { publish } = c.req.query();
@@ -55,6 +56,33 @@ tipEngineRoute.post('/create', async (c) => {
     // verify body data with zod schema
     // errors if invalid
     await CreateTipEngineSchema.parseAsync(bodyData);
+
+    // check creatorAddress matches authenticated wallet
+    const authenticatedAddress: string | null | undefined = c.get('walletAddress' as never);
+    if (authenticatedAddress === null || authenticatedAddress === undefined) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "No authenticated wallet address found",
+          data: {
+          }
+        }),
+        { status: 400 }
+      );
+    }
+
+    if (bodyData.tipEngine.ownerAddress.toLowerCase() !== authenticatedAddress) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Owner address does not match authenticated wallet address",
+          data: {
+            authenticatedAddress
+          }
+        }),
+        { status: 400 }
+      );
+    }
 
     const db: Database = database(c.env.DATABASE_URL);
 
@@ -122,7 +150,7 @@ tipEngineRoute.post('/create', async (c) => {
         success: true,
         message: "Tip engine created successfully",
         data: {
-          
+          tipEngineId: tipEngine.id
         }
       }),
       { status: 200 }

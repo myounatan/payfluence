@@ -27,6 +27,7 @@ export type Bindings = {
   EIP712_DOMAIN_VERSION: string
   CHAIN_ID: string
   MORALIS_API_KEY: string
+  DAILY_ALLOWANCE_ENDPOINT: string
 }
 
 // type Variables = JwtVariables
