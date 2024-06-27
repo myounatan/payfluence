@@ -46,9 +46,7 @@ const WalletContextProvider = ({ children }: WalletContextProviderProps) => {
       setWaitingForSignature(true)
 
       // sign message to verify wallet
-      const signableMessage = Buffer.from("X-Wallet-Signature", "utf8").toString('hex')
-      console.log("Signable message", signableMessage)
-      signMessage(wagmiConfig, { message: signableMessage.toString() }).then((signature) => {
+      signMessage(wagmiConfig, { message: "X-Wallet-Signature" }).then((signature) => {
         console.log("Signature", signature)
 
         localStorage.setItem("X-Wallet-Signature", signature)

@@ -9,7 +9,7 @@ export const walletAuth = createMiddleware(async (c, next) => {
   if (walletSignature && wallet) {
     // message that was signed by the wallet is "X-Wallet-Signature"
     const address = await recoverPersonalSignature({
-      data: Buffer.from("X-Wallet-Signature", "utf8").toString("hex"),
+      data: Buffer.from("X-Wallet-Signature", "utf8"),
       signature: walletSignature
     });
     const walletSignatureValid = address.toString().toLowerCase() === wallet.toLowerCase();
