@@ -70,6 +70,7 @@ export const AirdropSchema = z.object({
   claimEndDate: z.date(),
   pointsToTokenRatio: z.coerce.number().min(1).default(10),
   requireLegacyAccount: z.boolean().default(true),
+  requirePowerBadge: z.boolean().default(true),
   minTokens: z.coerce.number().min(0, 'Minimum tokens must be at least 0'),
   minCasts: z.coerce.number().min(0),
 });

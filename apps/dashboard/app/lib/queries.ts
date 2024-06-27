@@ -65,7 +65,12 @@ export const useOwnedTokens = (
         ...addWalletHeaders(address)
       }};
       fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/web3/erc20/${address}/${MORALIS_CHAIN_NAMES[chainId]}`, options).then(response => response.json()).then(
-        jsonData => { console.log(jsonData.data); return setOwnedTokens(jsonData.data) });
+        jsonData => {
+          console.log(jsonData.data);
+          // sort alphabetically
+          jsonData.data.sort((a: any, b: any) => a.name.localeCompare(b.name));
+          return setOwnedTokens(jsonData.data)
+        });
     }
 
     fetchApi()

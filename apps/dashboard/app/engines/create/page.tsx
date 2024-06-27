@@ -167,7 +167,7 @@ export default function CreateTipEngine() {
     name: "airdrops",
   });
 
-  const addAirdrop = () => append({ startDate: new Date(), claimStartDate: new Date(), claimEndDate: new Date(), pointsToTokenRatio: 10, requireLegacyAccount: false, minTokens: 0, minCasts: 0 });
+  const addAirdrop = () => append({ startDate: new Date(), claimStartDate: new Date(), claimEndDate: new Date(), pointsToTokenRatio: 10, requireLegacyAccount: false, requirePowerBadge: false, minTokens: 0, minCasts: 0 });
   const removeAirdrop = (index: number) => remove(index);
 
 
@@ -316,7 +316,18 @@ export default function CreateTipEngine() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="farcaster">Farcaster</SelectItem>
-                              <SelectItem value="twitter" disabled>Twitter</SelectItem>
+                              <SelectItem value="twitter" disabled>
+                                Telegram
+                                <Badge variant="outline" className="ml-auto sm:ml-0">
+                                  Coming Soon
+                                </Badge>
+                              </SelectItem>
+                              <SelectItem className="flex flex-auto" value="twitter" disabled>
+                                Twitter
+                                <Badge variant="outline" className="ml-auto sm:ml-0">
+                                  Coming Soon
+                                </Badge>
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <CardDescription>
@@ -712,11 +723,33 @@ export default function CreateTipEngine() {
                                               checked={field.value}
                                             />
                                           </FormControl>
-
                                           <div className={cn("flex flex-col gap-2", !field.value && "opacity-50")}>
                                             <FormLabel>Legacy Account</FormLabel>
                                             <FormDescription>
                                             Participants must have created their social accounts before the airdrop start date.
+                                            </FormDescription>
+                                            <FormMessage />
+                                          </div>
+                                        </div>
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={pageForm.control}
+                                    name={`airdrops.${index}.requirePowerBadge`}
+                                    render={({ field }) => (
+                                      <FormItem className="grid gap-0">
+                                        <div className="flex flex-row items-center gap-4">
+                                          <FormControl>
+                                            <Switch id="public-timeline"
+                                              onCheckedChange={field.onChange}
+                                              checked={field.value}
+                                            />
+                                          </FormControl>
+                                          <div className={cn("flex flex-col gap-2", !field.value && "opacity-50")}>
+                                            <FormLabel>Require Power Badge</FormLabel>
+                                            <FormDescription>
+                                              Participants must have a Power Badge on their Farcaster account, <Link href="https://warpcast.notion.site/Power-Badge-d81fea2e953e4dafae7c85295ffaf3ae" target="_blank" className="font-semibold underline cursor-pointer">read more</Link>.
                                             </FormDescription>
                                             <FormMessage />
                                           </div>
