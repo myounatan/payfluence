@@ -116,6 +116,7 @@ export const Airdrops = pgTable('airdrop', {
   minCasts: integer('min_casts').default(0),
 
   requireLegacyAccount: boolean('require_legacy_account').default(false),
+  requirePowerBadge: boolean('require_power_badge').default(false),
 
   // a POST request to a custom API must return a response, if 200, then the user is eligible
   customAPIRequirement: text('custom_api_requirement'),
@@ -136,9 +137,10 @@ export const airdropRelations = relations(Airdrops, ({ one }) => ({
 }));
 
 export const WebhookLogs = pgTable('webhook_log', {
-  id: text('id').primaryKey(), // webhook id
+  id: uuid('id').defaultRandom().primaryKey(),
 
-  webhookEvent: text('webhook_event').notNull(),
+  webhookId: text('webhook_id').notNull(),
+  webhookType: text('webhook_type').notNull(),
   webhookPayload: text('webhook_payload').notNull(),
 
   processed: boolean('processed').default(false),
@@ -151,9 +153,9 @@ export const TipPosts = pgTable('tip_post', {
   id: text('id').primaryKey(), // post id
   providerType: ProviderType('provider_type').notNull(),
 
-  tipEngineId: text('tip_engine_id').notNull(),
+  airdropId: text('airdrop_id').notNull(),
 
-  pointsTipped: integer('amount_tipped').notNull(),
+  amountTipped: integer('amount_tipped').notNull(),
   receiverId: text('receiver_id').notNull(),
   senderId: text('sender_id').notNull(),
 
@@ -169,12 +171,12 @@ export const AirdropParticipants = pgTable('airdrop_participant', {
   airdropId: text('airdrop_id').notNull(),
   receiverId: text('receiver_id').notNull(), // farcaster id, twitter user id, etc
 
-  points: integer('points').notNull(),
+  points: integer('points').notNull().default(0),
 
   // signature holds airdrop/tip engine owner confirmation signature, receiver address, airdrop id, and claimable amount
   // which is signed by payfluence backend admin wallet
   signature: text('signature').unique(),
-  claimableAmount: bigint('claimable_amount', { mode: 'bigint' }).notNull(),
+  claimableAmount: bigint('claimable_amount', { mode: 'bigint' }).notNull().default(BigInt(0)),
 
   claimed: boolean('claimed').default(false),
   claimedAt: timestamp('claimed_at'),

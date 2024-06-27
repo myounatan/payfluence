@@ -18,6 +18,10 @@ app.post('/user/create', async (c) => {
   try {
     // validate webhook signature
     const signature = c.req.header("x-dynamic-signature-256");
+    if (!signature) {
+      return new Response("Signature is required", { status: 400 });
+    }
+
     const bodyData = await c.req.json();
 
     const webhooks = new Webhooks({

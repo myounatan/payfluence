@@ -19,7 +19,7 @@ import HeaderNav from "@/components/HeaderNav";
 import SimpleDialog from "@/components/SimpleDialog";
 import { useEffect, useState } from "react";
 import { cn } from "@ui/lib/utils";
-import { AirdropSchema, CHAIN_ID_NAME_MAP, CHAIN_NAMES, CreateTipEngineSchema, TipEngineSchema } from "@repo/database/types"
+import { AirdropSchema, CHAIN_ID_NAME_MAP, CHAIN_NAMES, CreateTipEngineSchema, SLUG_CHAIN_NAMES, TipEngineSchema } from "@repo/database/types"
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
@@ -338,7 +338,7 @@ export default function CreateTipEngine() {
                                 />
                               </FormControl>
                               <FormDescription className="text-xs text-muted-foreground">
-                                payfluence.io/tips/{field.value}
+                                payfluence.io/{SLUG_CHAIN_NAMES[requiredChainId]}/{field.value}
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -685,8 +685,11 @@ export default function CreateTipEngine() {
                                       <Info className="h-4 w-4" />
                                     </Label>
                                     <CardDescription>
-                                    Tip allowance is calculated by Payfluence against token total supply, <Link href="#"><u><b>read more</b></u></Link>.
+                                    Tip allowance is calculated by Payfluence against token total supply and user balance.
                                     </CardDescription>
+                                    <WarningCard variant="warn" title="Farcaster linked wallet required">
+                                      All participants must have at least one linked wallet that holds your token to be eligible for a daily allowance.
+                                    </WarningCard>
                                   </div>
                                   <div className="grid gap-3">
                                     <Separator />
@@ -731,7 +734,7 @@ export default function CreateTipEngine() {
                                           <div className={cn("flex flex-col gap-2 w-full", !minTokenBalanceEnabled && "opacity-50")}>
                                             <Label>Min. Token Balance</Label>
                                             <CardDescription>
-                                            Also enables Farcaster linked wallet requirement. Participants must hold a minimum balance of the funded token.
+                                            Participants must hold a minimum balance of the funded token.
                                             </CardDescription>
                                           </div>
                                           <FormItem>

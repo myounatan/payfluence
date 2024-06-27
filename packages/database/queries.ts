@@ -1,6 +1,6 @@
-import { and, count, eq } from 'drizzle-orm';
-import { AirdropParticipants, Airdrops, ProductIdSubscriptionTierMap, RestrictedTipStrings, SubscriptionTierFeatures, TipEngines, Users } from './schema';
-import { Airdrop, AirdropParticipant, NewTipEngine, SubscriptionTierFeature, TipEngine, User, UserSubscriptionParams } from './types';
+import { and, count, eq, gte, lte, sql, sum } from 'drizzle-orm';
+import { AirdropParticipants, Airdrops, ProductIdSubscriptionTierMap, RestrictedTipStrings, SubscriptionTierFeatures, TipEngines, TipPosts, Users } from './schema';
+import { Airdrop, AirdropParticipant, NewTipEngine, NewTipPost, TipEngine, TipPost, User, UserSubscriptionParams } from './types';
 import { Database } from './database';
 
 // User queries
@@ -134,7 +134,27 @@ export async function getTipEnginesForUser(db: Database, userId: string): Promis
   return db.select().from(TipEngines).where(eq(TipEngines.userId, userId));
 }
 
+export async function getTipEngineByTipString(db: Database, tipString: string): Promise<TipEngine> {
+  const tipEngines = await db.select().from(TipEngines).where(eq(TipEngines.tipString, tipString));
+
+  if (tipEngines.length === 0) {
+    throw new Error(`Tip engine with tip string ${tipString} not found`);
+  }
+
+  return tipEngines[0];
+}
+
 // Airdrop queries
+
+export async function getTipEngineActiveAirdrops(db: Database, tipEngineId: string): Promise<Airdrop[]> {
+  // we need to check all airdrops associated with a tip engine and check to see if the start date and claim start date have passed
+  const airdrops = await db.select().from(Airdrops).where(eq(Airdrops.tipEngineId, tipEngineId));
+
+  // check to see if current time is after start date and before claim start date
+  return airdrops.filter((airdrop) => {
+    return airdrop.startDate < new Date() && airdrop.claimStartDate > new Date();
+  });
+}
 
 export async function getAirdropById(db: Database, airdropId: string): Promise<Airdrop> {
   const airdrops = await db.select().from(Airdrops).where(eq(Airdrops.id, airdropId));
@@ -146,6 +166,8 @@ export async function getAirdropById(db: Database, airdropId: string): Promise<A
   return airdrops[0];
 }
 
+// Airdrop participant queries
+
 export async function getAirdropParticipantByIds(db: Database, airdropId: string, receiverId: string): Promise<AirdropParticipant> {
   const airdropParticipants = await db.select().from(AirdropParticipants).where(and(eq(AirdropParticipants.id, airdropId), eq(AirdropParticipants.receiverId, receiverId)));
 
@@ -156,9 +178,25 @@ export async function getAirdropParticipantByIds(db: Database, airdropId: string
   return airdropParticipants[0];
 }
 
+export async function createAirdropParticipant(db: Database, airdropId: string, receiverId: string, startingPoints?: number): Promise<AirdropParticipant> {
+  const airdropParticipant = await db.insert(AirdropParticipants).values({
+    airdropId,
+    receiverId,
+    points: startingPoints || 0,
+  });
+
+  return airdropParticipant[0];
+}
+
 export async function setAirdropParticipantSignature(db: Database, airdropId: string, receiverId: string, signature: string) {
   await db.update(AirdropParticipants).set({
     signature,
+  }).where(and(eq(AirdropParticipants.id, airdropId), eq(AirdropParticipants.receiverId, receiverId)));
+}
+
+export async function incrementAirdropParticipantPoints(db: Database, airdropId: string, receiverId: string, points: number) {
+  await db.update(AirdropParticipants).set({
+    points: sql`${AirdropParticipants.points} + ${points}`
   }).where(and(eq(AirdropParticipants.id, airdropId), eq(AirdropParticipants.receiverId, receiverId)));
 }
 
@@ -172,4 +210,62 @@ export async function getSubscriptionTierFromProductId(db: Database, productId: 
   }
 
   return result[0].subscriptionTier;
+}
+
+// webhook log queries
+
+// tip post queries
+
+export async function createTipPost(db: Database, tipPostParams: NewTipPost): Promise<TipPost> {
+  const tipPost = await db.insert(TipPosts).values(tipPostParams);
+
+  return tipPost[0];
+}
+
+export async function getTotalAmountTippedBetweenDatesForSender(db: Database, senderId: string, startDate: Date, endDate: Date): Promise<number> {
+  // return all tip posts where the created date is greater than or equal to the start date and less than or equal to the end date
+  const result = await db.select({
+    totalAmountTipped: sum(TipPosts.amountTipped),
+  }).from(TipPosts).where(and(eq(TipPosts.senderId, senderId), gte(TipPosts.createdAt, startDate), lte(TipPosts.createdAt, endDate), eq(TipPosts.approved, true)));
+
+  return Number(result[0].totalAmountTipped);
+}
+
+// export async function getApprovedTipPostsForReceiverAirdropId(db: Database, receiverId: string, airdropId: string): Promise<number> {
+//   // return all tip posts where the receiver id is the same as the receiver id passed in and the airdrop id is the same as the airdrop id passed in
+//   const result = await db.select({
+//     totalAmountTipped: sum(TipPosts.amountTipped),
+//   }).from(TipPosts).where(and(eq(TipPosts.receiverId, receiverId), eq(TipPosts.airdropId, airdropId), eq(TipPosts.approved, true)));
+
+//   return Number(result[0].totalAmountTipped);
+// }
+
+// DAILY BUDGET CALCULATION
+
+export async function getDailyBudgetForSenderId(): Promise<number> {
+  return 2000;
+}
+
+export async function getBalanceOf(rpcUrl: string, walletAddress: string, tokenContract: string) {
+  const balanceOfSelector = "0x70a08231";
+  const payload = {
+    "id": 1,
+    "jsonrpc": "2.0",
+    "method": "eth_call",
+    "params": [
+      {
+        "data": balanceOfSelector + "000000000000000000000000" + walletAddress,
+        "to": tokenContract
+      },
+      "latest"
+    ]
+  }
+  
+  const response = await fetch(rpcUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  return await response.json();
 }

@@ -194,6 +194,31 @@ importers:
         specifier: ^5
         version: 5.3.3
 
+  apps/worker-daily-allowance:
+    dependencies:
+      '@repo/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      ethereum-block-by-date:
+        specifier: ^1.4.9
+        version: 1.4.9
+      hono:
+        specifier: ^4.4.6
+        version: 4.4.6
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20240605.0
+        version: 4.20240605.0
+      '@types/node':
+        specifier: ^20.5.7
+        version: 20.11.24
+      '@types/service-worker-mock':
+        specifier: ^2.0.1
+        version: 2.0.4
+      wrangler:
+        specifier: ^3.9.0
+        version: 3.60.3(@cloudflare/workers-types@4.20240605.0)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+
   apps/worker-dynamicxyz:
     dependencies:
       '@octokit/webhooks':
@@ -6021,6 +6046,9 @@ packages:
   eth-rpc-errors@4.0.3:
     resolution: {integrity: sha512-Z3ymjopaoft7JDoxZcEb3pwdGh7yiYMhOwm2doUt6ASXlMavpNlK6Cre0+IMl2VSGyEU9rkiperQhp5iRxn5Pg==}
 
+  ethereum-block-by-date@1.4.9:
+    resolution: {integrity: sha512-BsU2uwrfEpBZ+99j2Bk7OjoLi4BhTQ2IpEw2xaGyzqdfL/ibO8YJj7+oLBsdjJL11V7uhSxF+miAE7voI9dUOA==}
+
   ethereum-bloom-filters@1.1.0:
     resolution: {integrity: sha512-J1gDRkLpuGNvWYzWslBQR9cDV4nd4kfvVTE/Wy4Kkm4yb3EYRSlyi0eB/inTsSTTVyA0+HyzHgbr95Fn/Z1fSw==}
 
@@ -7785,6 +7813,9 @@ packages:
     resolution: {integrity: sha512-eqhGB8JKapEYcC4ytX/xrzKforgEc3j1pGlAXVy3eRwrtAy5/nIfT1SvgGzfN0XZZxeLq0aQWkOUAmqIJiv+bA==}
     engines: {node: '>= 14.0.0'}
     hasBin: true
+
+  moment@2.30.1:
+    resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
   motion@10.16.2:
     resolution: {integrity: sha512-p+PurYqfUdcJZvtnmAqu5fJgV2kR0uLFQuBKtLeFVTrYEVllI99tiOTSefVNYuip9ELTEkepIIDftNdze76NAQ==}
@@ -10142,18 +10173,6 @@ packages:
 
   ws@8.13.0:
     resolution: {integrity: sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: '>=5.0.2'
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
-
-  ws@8.14.2:
-    resolution: {integrity: sha512-wEBG1ftX4jcglPxgFCMJmZ2PLtSbJ2Peg6TmpJFTbe9GZYOQCDPdMYu/Tm0/bGZkw8paZnJY45J4K2PZrLYq8g==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -17720,6 +17739,10 @@ snapshots:
     dependencies:
       fast-safe-stringify: 2.1.1
 
+  ethereum-block-by-date@1.4.9:
+    dependencies:
+      moment: 2.30.1
+
   ethereum-bloom-filters@1.1.0:
     dependencies:
       '@noble/hashes': 1.4.0
@@ -20190,7 +20213,7 @@ snapshots:
       stoppable: 1.1.0
       undici: 5.28.4
       workerd: 1.20240610.1
-      ws: 8.14.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      ws: 8.17.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       youch: 3.3.3
       zod: 3.23.8
     transitivePeerDependencies:
@@ -20267,6 +20290,8 @@ snapshots:
       yargs: 16.2.0
       yargs-parser: 20.2.4
       yargs-unparser: 2.0.0
+
+  moment@2.30.1: {}
 
   motion@10.16.2:
     dependencies:
@@ -22957,11 +22982,6 @@ snapshots:
     optionalDependencies:
       bufferutil: 4.0.8
       utf-8-validate: 5.0.10
-
-  ws@8.14.2(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    optionalDependencies:
-      bufferutil: 4.0.8
-      utf-8-validate: 6.0.4
 
   ws@8.17.1(bufferutil@4.0.8)(utf-8-validate@5.0.10):
     optionalDependencies:

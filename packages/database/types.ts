@@ -1,5 +1,5 @@
 import { InferSelectModel, InferInsertModel } from 'drizzle-orm';
-import { Users, TipEngines, Airdrops, ProviderType, AirdropParticipants, RestrictedTipStrings, SubscriptionTierFeatures } from './schema';
+import { Users, TipEngines, Airdrops, ProviderType, AirdropParticipants, RestrictedTipStrings, SubscriptionTierFeatures, WebhookLogs, TipPosts } from './schema';
 import { z } from 'zod';
 import { isAddress } from 'ethers';
 
@@ -22,6 +22,12 @@ export type NewRestrictedTipString = InferInsertModel<typeof RestrictedTipString
 
 export type SubscriptionTierFeature = InferSelectModel<typeof SubscriptionTierFeatures>;
 
+export type WebhookLog = InferSelectModel<typeof WebhookLogs>;
+export type NewWebhookLog = InferInsertModel<typeof WebhookLogs>;
+
+export type TipPost = InferSelectModel<typeof TipPosts>;
+export type NewTipPost = InferInsertModel<typeof TipPosts>;
+
 export const ProviderTypeSchema = z.enum(ProviderType.enumValues);
 
 export const CHAIN_NAME_ID_MAP = {
@@ -36,6 +42,11 @@ export const CHAIN_ID_NAME_MAP: Record<number, string> = {
 
 export const MORALIS_CHAIN_NAMES: Record<number, string> = {
   84532: 'base%20sepolia',
+  8453: 'base',
+};
+
+export const SLUG_CHAIN_NAMES: Record<number, string> = {
+  84532: 'base-sepolia',
   8453: 'base',
 };
 
