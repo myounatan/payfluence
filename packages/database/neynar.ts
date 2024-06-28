@@ -79,9 +79,9 @@ export const fetchDailyAllowance = async (endpoint: string, fid: string): Promis
 
 // webhook creation
 
-export const createNeynarWebhook = async (neynarAPIKey: string, webhookUrl: string, tipEngine: TipEngine) => {
+export const createNeynarWebhook = async (neynarAPIKey: string, webhookUrl: string, tipEngineId: string, tipString: string) => {
 
-  const strippedTipString = tipEngine.tipString.substring(1);
+  const strippedTipString = tipString.substring(1);
 
   const url = 'https://api.neynar.com/v2/farcaster/webhook';
   const options = {
@@ -93,7 +93,7 @@ export const createNeynarWebhook = async (neynarAPIKey: string, webhookUrl: stri
     },
     body: JSON.stringify({
       subscription: {'cast.created': {text: `\$(${strippedTipString.toUpperCase}|${strippedTipString.toLowerCase()})`}},
-      name: tipEngine.id,
+      name: tipEngineId,
       url: webhookUrl
     })
   };

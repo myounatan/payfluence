@@ -46,6 +46,7 @@ export const dynamicAuth = createMiddleware(async (c, next) => {
   
   // console.log(protectedHeader)
   console.log(result.payload)
+  console.log("result", result)
 
   // add email to context
 

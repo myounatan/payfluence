@@ -69,12 +69,13 @@ export const useTipEngine = (authToken: string | undefined): {
     fetchApi()
   }, [authToken]);
 
-  const createTipEngine = async (tipEngine: CreateTipEngine, published: boolean): Promise<{ tipEngineId: string, published: boolean }> => {
+  const createTipEngine = async (createParams: CreateTipEngine, published: boolean): Promise<{ tipEngineId: string, published: boolean }> => {
     const options = {method: 'POST', headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${authToken}`
-    }, body: JSON.stringify({ tipEngine })};
-    const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/create&publish=${published === true ? "true" : "false"}`, options)
+      "Authorization": `Bearer ${authToken}`,
+      ...addWalletHeaders(createParams.tipEngine.ownerAddress)
+    }, body: JSON.stringify({ ...createParams })};
+    const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/create?publish=${published === true ? "true" : "false"}`, options)
     const jsonData = await response.json()
 
     return { tipEngineId: jsonData.data.tipEngineId, published: jsonData.data.published };

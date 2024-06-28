@@ -1,4 +1,4 @@
-import { CreateTipEngine, CreateTipEngineSchema, Database, TipEngine, TipEngineSchema, User, createNeynarWebhook, createTipEngine, database, deleteNeynarWebhook, getTipEngineAllowanceForUser, getTipEngineById, isValidSlug, isValidTipString, setTipEngineWebhook } from '@repo/database';
+import { CreateTipEngine, CreateTipEngineSchema, Database, TipEngine, TipEngineSchema, User, createAirdrop, createNeynarWebhook, createTipEngine, database, deleteNeynarWebhook, getTipEngineAllowanceForUser, getTipEngineById, isValidSlug, isValidTipString, setTipEngineWebhook } from '@repo/database';
 import { Hono } from 'hono'
 import { Bindings, getUser } from 'index';
 import { walletAuth } from 'middleware';
@@ -68,7 +68,7 @@ tipEngineRoute.post('/setpublish/:id/:published', async (c) => {
         );
       }
 
-      const webhookCreatedData: any = await createNeynarWebhook(c.env.NEYNAR_API_KEY, c.env.PAYFLUENCE_NEYNAR_WEBHOOK_URL, tipEngine);
+      const webhookCreatedData: any = await createNeynarWebhook(c.env.NEYNAR_API_KEY, c.env.PAYFLUENCE_NEYNAR_WEBHOOK_URL, tipEngine.id, tipEngine.tipString);
 
       await setTipEngineWebhook(db, tipEngine.id, webhookCreatedData.webhook.webhook_id, true, webhookCreatedData.webhook.secrets.value);
 
@@ -128,15 +128,19 @@ tipEngineRoute.post('/create', walletAuth, async (c) => {
     // url query "publish" boolean
     const { publish } = c.req.query();
 
-    const bodyData: CreateTipEngine = await c.req.json();
+    let bodyData: CreateTipEngine = await c.req.json();
 
     // verify body data with zod schema
     // errors if invalid
-    await CreateTipEngineSchema.parseAsync(bodyData);
+    bodyData = await CreateTipEngineSchema.parseAsync(bodyData);
+
+    console.log(bodyData.airdrops)
+    console.log(bodyData.airdrops[0].startDate)
 
     // check creatorAddress matches authenticated wallet
     const authenticatedAddress: string | null | undefined = c.get('walletAddress' as never);
     if (authenticatedAddress === null || authenticatedAddress === undefined) {
+      console.log("No authenticated wallet address found")
       return new Response(
         JSON.stringify({
           success: false,
@@ -148,7 +152,8 @@ tipEngineRoute.post('/create', walletAuth, async (c) => {
       );
     }
 
-    if (bodyData.tipEngine.ownerAddress.toLowerCase() !== authenticatedAddress) {
+    if (bodyData.tipEngine.ownerAddress.toLowerCase() !== (authenticatedAddress as string).toLowerCase()) {
+      console.log("Owner address does not match authenticated wallet address")
       return new Response(
         JSON.stringify({
           success: false,
@@ -168,6 +173,7 @@ tipEngineRoute.post('/create', walletAuth, async (c) => {
 
     // error if slug or tipstring is not available
     if (!availableSlug) {
+      console.log("Slug is not available")
       return new Response(
         JSON.stringify({
           success: false,
@@ -182,6 +188,7 @@ tipEngineRoute.post('/create', walletAuth, async (c) => {
     }
 
     if (!availableTipString) {
+      console.log("Tip string is not available")
       return new Response(
         JSON.stringify({
           success: false,
@@ -197,12 +204,20 @@ tipEngineRoute.post('/create', walletAuth, async (c) => {
 
     const user: User = await getUser(c);
 
-    const tipEngine: TipEngine = await createTipEngine(db, {
+    const tipEngineId = await createTipEngine(db, {
       ...bodyData.tipEngine,
       chainId: Number(bodyData.tipEngine.chainId),
       userId: user.id,
       webhookId: "",
     });
+
+    for (let i = 0; i < bodyData.airdrops.length; i++) {
+      await createAirdrop(db, {
+        ...bodyData.airdrops[i],
+        tipEngineId: tipEngineId,
+        tokenAmount: BigInt(0),
+      })
+    }
 
     let published = false;
     if (publish) {
@@ -212,9 +227,9 @@ tipEngineRoute.post('/create', walletAuth, async (c) => {
       // error if user has no tip engine allowance
       if (tipEngineAllowance > 0) {
         // publish webhook
-        const webhookCreatedData: any = await createNeynarWebhook(c.env.NEYNAR_API_KEY, c.env.PAYFLUENCE_NEYNAR_WEBHOOK_URL, tipEngine);
+        const webhookCreatedData: any = await createNeynarWebhook(c.env.NEYNAR_API_KEY, c.env.PAYFLUENCE_NEYNAR_WEBHOOK_URL, tipEngineId, bodyData.tipEngine.tipString);
 
-        await setTipEngineWebhook(db, tipEngine.id, webhookCreatedData.webhook.webhook_id, true, webhookCreatedData.webhook.secrets.value);
+        await setTipEngineWebhook(db, tipEngineId, webhookCreatedData.webhook.webhook_id, true, webhookCreatedData.webhook.secrets.value);
 
         published = true;
       }
@@ -225,7 +240,7 @@ tipEngineRoute.post('/create', walletAuth, async (c) => {
         success: true,
         message: "Tip engine created successfully",
         data: {
-          tipEngineId: tipEngine.id,
+          tipEngineId: tipEngineId,
           published
         }
       }),

@@ -41,7 +41,7 @@ export default function HeaderNav({ breadcrumbLinks }: HeaderNavProps) {
   }, [localUser]);
 
   return (
-    <header className="sticky top-0 z-30 flex h-[50px] items-center gap-4 px-4 py-2 border-0 backdrop-blur-2xl bg-opacity-40 sm:px-6 bg-slate-100">
+    <header className="sticky top-0 z-30 flex h-[50px] items-center gap-4 px-4 border-0 backdrop-blur-xl bg-opacity-10 sm:px-6 bg-slate-100">
       <Breadcrumbs links={breadcrumbLinks} />
       <div className="relative ml-auto flex-1 md:grow-0">
         {isConnected ? (

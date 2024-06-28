@@ -65,12 +65,12 @@ export const TipEngineSchema = z.object({
 });
 
 export const AirdropSchema = z.object({
-  startDate: z.date(),
-  claimStartDate: z.date(),
-  claimEndDate: z.date(),
+  startDate: z.coerce.date(),
+  claimStartDate: z.coerce.date(),
+  claimEndDate: z.coerce.date(),
   pointsToTokenRatio: z.coerce.number().min(1).default(10),
   requireLegacyAccount: z.boolean().default(true),
-  requirePowerBadge: z.boolean().default(true),
+  requirePowerBadge: z.boolean().default(false),
   minTokens: z.coerce.number().min(0, 'Minimum tokens must be at least 0'),
   minCasts: z.coerce.number().min(0).max(10, 'Minimum casts must be between 0 and 10'),
 });

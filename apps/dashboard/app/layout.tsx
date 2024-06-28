@@ -20,6 +20,8 @@ import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { wagmiConfig } from '@/config/web3';
 import SidebarNav from "@/components/SidebarNav";
 import HeaderNav from "@/components/HeaderNav";
+import { Toaster } from "@ui/components/ui/toaster"
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -69,6 +71,7 @@ export default function RootLayout({
                 {SKIP_LAYOUT_PAGES.includes(pathname) ? (
                   <>
                     {children}
+                    <Toaster />
                   </>
                 ) : (
                   <div className="grid min-h-screen w-full grid-cols-[220px_1fr] lg:grid-cols-[220px_1fr] bg-slate-100">
@@ -78,6 +81,7 @@ export default function RootLayout({
                     <div className="flex flex-col sm:gap-4 sm:py-4">
                       <HeaderNav breadcrumbLinks={[]} />
                       {children}
+                      <Toaster />
                     </div>
                     
                   </div>

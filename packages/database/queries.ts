@@ -1,6 +1,6 @@
 import { and, count, eq, gte, lte, sql, sum } from 'drizzle-orm';
 import { AirdropParticipants, Airdrops, ProductIdSubscriptionTierMap, RestrictedTipStrings, SubscriptionTierFeatures, TipEngines, TipPosts, Users } from './schema';
-import { Airdrop, AirdropParticipant, NewTipEngine, NewTipPost, TipEngine, TipPost, User, UserSubscriptionParams } from './types';
+import { Airdrop, AirdropParticipant, NewAirdrop, NewTipEngine, NewTipPost, TipEngine, TipPost, User, UserSubscriptionParams } from './types';
 import { Database } from './database';
 
 // User queries
@@ -50,10 +50,10 @@ export function getUserSubscriptionTier(db: Database, user: UserSubscriptionPara
 
 // Tip engine queries
 
-export async function createTipEngine(db: Database, tipEngineParams: NewTipEngine): Promise<TipEngine> {
-  const tipEngine = await db.insert(TipEngines).values(tipEngineParams);
+export async function createTipEngine(db: Database, tipEngineParams: NewTipEngine): Promise<string> {
+  const tipEngineId = await db.insert(TipEngines).values(tipEngineParams).returning({ id: TipEngines.id });
 
-  return tipEngine[0];
+  return tipEngineId[0].id;
 }
 
 export async function isValidTipString(db: Database, tipString: string): Promise<boolean> {
@@ -154,6 +154,10 @@ export async function setTipEngineWebhook(db: Database, tipEngineId: string, web
 
 // Airdrop queries
 
+export async function createAirdrop(db: Database, airdropParams: NewAirdrop): Promise<void> {
+  await db.insert(Airdrops).values(airdropParams);
+}
+
 export async function getTipEngineActiveAirdrops(db: Database, tipEngineId: string): Promise<Airdrop[]> {
   // we need to check all airdrops associated with a tip engine and check to see if the start date and claim start date have passed
   const airdrops = await db.select().from(Airdrops).where(eq(Airdrops.tipEngineId, tipEngineId));
@@ -186,14 +190,13 @@ export async function getAirdropParticipantByIds(db: Database, airdropId: string
   return airdropParticipants[0];
 }
 
-export async function createAirdropParticipant(db: Database, airdropId: string, receiverId: string, startingPoints?: number): Promise<AirdropParticipant> {
-  const airdropParticipant = await db.insert(AirdropParticipants).values({
+export async function createAirdropParticipant(db: Database, airdropId: string, receiverId: string, startingPoints?: number): Promise<void> {
+  await db.insert(AirdropParticipants).values({
     airdropId,
     receiverId,
+    claimableAmount: BigInt(0),
     points: startingPoints || 0,
   });
-
-  return airdropParticipant[0];
 }
 
 export async function setAirdropParticipantSignature(db: Database, airdropId: string, receiverId: string, signature: string) {
@@ -224,10 +227,8 @@ export async function getSubscriptionTierFromProductId(db: Database, productId: 
 
 // tip post queries
 
-export async function createTipPost(db: Database, tipPostParams: NewTipPost): Promise<TipPost> {
-  const tipPost = await db.insert(TipPosts).values(tipPostParams);
-
-  return tipPost[0];
+export async function createTipPost(db: Database, tipPostParams: NewTipPost): Promise<void> {
+  await db.insert(TipPosts).values(tipPostParams);
 }
 
 export async function getTotalAmountTippedBetweenDatesForSender(db: Database, senderId: string, startDate: Date, endDate: Date): Promise<number> {

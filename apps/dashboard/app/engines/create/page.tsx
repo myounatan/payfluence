@@ -12,7 +12,7 @@ import { Badge } from "@repo/ui/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ui/components/ui/popover"
 import WarningCard from "@/components/WarningCard";
 import { Separator } from "@ui/components/ui/separator";
-import { ArrowDown, CalendarIcon, ChevronLeft, Copy, Info, Loader2, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, CalendarIcon, ChevronLeft, Copy, Info, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import { Input } from "@ui/components/ui/input";
 import SimpleDialog from "@/components/SimpleDialog";
 import { useEffect, useState } from "react";
@@ -30,6 +30,9 @@ import TokenSelectorDialog from "@/components/TokenSelectorDialog";
 import SimpleTokenCard from "@/components/SimpleTokenCard";
 import { switchChain } from '@wagmi/core';
 import { CHAIN_ID_TO_WAGMI_CHAIN_ID, wagmiConfig } from "@/config/web3";
+import { useToast } from "@ui/components/ui/use-toast";
+import { useRouter } from "next/navigation";
+
 
 const breadcrumbLinks = [
   { route: "/engines", label: "Tip Engines" },
@@ -38,6 +41,8 @@ const breadcrumbLinks = [
 
 
 export default function CreateTipEnginePage() {
+  const router = useRouter();
+  const { toast } = useToast();
   const { authToken } = useDynamicContext();
   const { address: walletAddress, isConnected, chainId } = useAccount();
 
@@ -52,7 +57,7 @@ export default function CreateTipEnginePage() {
   const { checkAvailability } = useAvailableTipEngine(authToken);
 
   const [loadingNext, setLoadingNext] = useState(false);
-
+  const [lastClickedSubmit, setLastClickedSubmit] = useState<"draft" | "publish" | null>(null);
 
   const [wrongChain, setWrongChain] = useState(false);
 
@@ -79,6 +84,7 @@ export default function CreateTipEnginePage() {
         claimEndDate: dayAfterTomorrow,
         pointsToTokenRatio: 10,
         requireLegacyAccount: true,
+        requirePowerBadge: false,
         minTokens: 10000,
         minCasts: 0,
       }],
@@ -242,56 +248,74 @@ export default function CreateTipEnginePage() {
 
   const onSubmit = async (values: CreateTipEngine) => {
     setLoadingNext(true);
+    try {
 
-    // check uniqueness of tip string and slug in the database
-    const slug = values.tipEngine.slug;
-    const tipString = values.tipEngine.tipString;
+      // check uniqueness of tip string and slug in the database
+      const slug = values.tipEngine.slug;
+      const tipString = values.tipEngine.tipString;
 
-    const { slugAvailable, tipStringAvailable } = await checkAvailability(slug, tipString);
+      const { slugAvailable, tipStringAvailable } = await checkAvailability(slug, tipString);
 
-    console.log("slugAvailable", slugAvailable);
-    console.log("tipStringAvailable", tipStringAvailable);
+      console.log("slugAvailable", slugAvailable);
+      console.log("tipStringAvailable", tipStringAvailable);
 
-    let anyErrors = false;
+      let anyErrors = false;
 
-    if (!slugAvailable) {
-      anyErrors = true;
-      pageForm.setError("tipEngine.slug", { message: `${slug} is already taken` });
-    }
+      if (!slugAvailable) {
+        anyErrors = true;
+        pageForm.setError("tipEngine.slug", { message: `${slug} is already taken` });
 
-    if (!tipStringAvailable) {
-      anyErrors = true;
-      pageForm.setError("tipEngine.tipString", { message: `${tipString} is already taken` });
-    }
+        // toast({title: `Slug ${slug} is already taken`});
+      }
 
-    // check previous airdrop dates are before the next airdrop dates, we dont care about claim end date for any airdrop
-    // how it works: airdrop1.startDate < airdrop1.claimStartDate < airdrop2.startDate < airdrop2.claimStartDate < airdrop3.startDate < airdrop3.claimStartDate and so on
-    // we probably need a doulbe loop for this
-    for (let i = 0; i < values.airdrops.length - 1; i++) {
-      for (let j = i + 1; j < values.airdrops.length; j++) {
-        const airdrop1 = values.airdrops[i];
-        const airdrop2 = values.airdrops[j];
+      if (!tipStringAvailable) {
+        anyErrors = true;
+        pageForm.setError("tipEngine.tipString", { message: `${tipString} is already taken` });
 
-        if (airdrop1.startDate >= airdrop2.startDate) {
-          anyErrors = true;
-          pageForm.setError(`airdrops.${i}.startDate`, { message: "Start date must be before the next airdrop's start date" });
-        }
+        // toast({title: `Tip string ${tipString} is already taken`});
+      }
 
-        if (airdrop1.claimStartDate >= airdrop2.claimStartDate) {
-          anyErrors = true;
-          pageForm.setError(`airdrops.${i}.claimStartDate`, { message: "Claim start date must be before the next airdrop's claim start date" });
+      // check previous airdrop dates are before the next airdrop dates, we dont care about claim end date for any airdrop
+      // how it works: airdrop1.startDate < airdrop1.claimStartDate < airdrop2.startDate < airdrop2.claimStartDate < airdrop3.startDate < airdrop3.claimStartDate and so on
+      // we probably need a doulbe loop for this
+      for (let i = 0; i < values.airdrops.length - 1; i++) {
+        for (let j = i + 1; j < values.airdrops.length; j++) {
+          const airdrop1 = values.airdrops[i];
+          const airdrop2 = values.airdrops[j];
+
+          if (airdrop1.startDate >= airdrop2.startDate) {
+            anyErrors = true;
+            pageForm.setError(`airdrops.${j}.startDate`, { message: "Start date must be after the previous airdrop's start date" });
+          }
+
+          if (airdrop1.claimStartDate >= airdrop2.claimStartDate) {
+            anyErrors = true;
+            pageForm.setError(`airdrops.${j}.claimStartDate`, { message: "Claim start date must be after the previous airdrop's claim start date" });
+          }
         }
       }
+
+      if (anyErrors) {
+        setLoadingNext(false);
+        return;
+      }
+
+      console.log(values);
+
+      const { tipEngineId } = await createTipEngine(values, lastClickedSubmit === "publish");
+      console.log(tipEngineId);
+
+      // toast({title: `Tip engine created successfully!`});
+
+      // redirect to the tip engines
+      router.push(`/engines`);
+      
+    } catch (e: any) {
+      console.error(e);
+      setLoadingNext(false);
+
+      // toast({title: `Error creating tip engine`, description: e.message});
     }
-
-    setLoadingNext(false);
-    
-    if (anyErrors) {
-      return;
-    }
-
-
-    console.log(values);
   }
 
   // const setAirdropSchemaKeyValue = (index: number, key: string, value: any) => {
@@ -325,12 +349,13 @@ export default function CreateTipEnginePage() {
                 Settings
               </Badge> */}
               <div className="hidden items-center gap-2 md:ml-auto md:flex">
-                <Button variant="outline" size="xs">
+                <Button variant="outline" size="xs" type="submit" name="draft" disabled={loadingNext} onClick={() => { setLastClickedSubmit("draft") }}>
+                  {loadingNext && <Loader2 className={cn("h-4 w-4", "animate-spin")} />}
                   Safe as Draft
                 </Button>
-                <Button variant="highlight-primary" type="submit" form="page-form" disabled={loadingNext}>
-                  {loadingNext && <Loader2 className={cn("h-4 w-4", "animate-spin")} />}
-                  Next
+                <Button variant="highlight-primary" type="submit" form="page-form" disabled={loadingNext} name="publish" onClick={() => { setLastClickedSubmit("publish") }}>
+                  {loadingNext ? (<Loader2 className={cn("h-4 w-4", "animate-spin")} />) : (<Save className="h-4 w-4" />)}
+                  Publish
                 </Button>
               </div>
             </div>
