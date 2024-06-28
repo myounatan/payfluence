@@ -75,6 +75,8 @@ export const usersRelations = relations(Users, ({ many }) => ({
 export const TipEngines = pgTable('tip_engine', {
   id: uuid('id').defaultRandom().primaryKey(),
 
+  name: text('name').notNull(),
+
   // user owns a tip engine
   userId: text('user_id').notNull(),
 
@@ -160,7 +162,17 @@ export const TipPosts = pgTable('tip_post', {
   receiverId: text('receiver_id').notNull(),
   senderId: text('sender_id').notNull(),
 
+  receiverAvatarUrl: text('receiver_avatar_url'),
+  senderAvatarUrl: text('sender_avatar_url'),
+
+  receiverUsername: text('receiver_username'),
+  senderUsername: text('sender_username'),
+
+  receiverDisplayName: text('receiver_display_name'),
+  senderDisplayName: text('sender_display_name'),
+
   approved: boolean('approved').default(false),
+  rejectedReason: text('rejected_reason'),
 
   createdAt: timestamp('created_at').default(sql`now()`),
   updatedAt: timestamp('updated_at').default(sql`now()`),
@@ -177,7 +189,7 @@ export const AirdropParticipants = pgTable('airdrop_participant', {
   // signature holds airdrop/tip engine owner confirmation signature, receiver address, airdrop id, and claimable amount
   // which is signed by payfluence backend admin wallet
   signature: text('signature').unique(),
-  claimableAmount: bigint('claimable_amount', { mode: 'bigint' }).notNull().default(BigInt(0)),
+  claimableAmount: bigint('claimable_amount', { mode: 'bigint' }).notNull(),
 
   claimed: boolean('claimed').default(false),
   claimedAt: timestamp('claimed_at'),

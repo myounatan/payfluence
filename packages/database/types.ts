@@ -81,3 +81,23 @@ export const CreateTipEngineSchema = z.object({
 });
 
 export type CreateTipEngine = z.infer<typeof CreateTipEngineSchema>;
+
+export type OmittedAirdrop = Omit<Airdrop, 'id' | 'tipEngineId' | 'minTokensDuration' | 'customAPIRequirementts' | 'createdAt' | 'updatedAt' | 'customAPIRequirement' | 'tokenAmount'>;
+
+type OmittedTipEngine = Omit<TipEngine, 'webhookSecret' | 'webhookId' | 'updatedAt'>;
+export type TipEngineDisplayParams =
+  OmittedTipEngine &
+  {
+    status: string,
+    totalPointsGiven: number,
+    totalTokensClaimed: number,
+    totalClaimableTokens: number,
+    totalParticipants: number,
+    tokenBalance: number,
+  } &
+  {
+    airdrops: OmittedAirdrop[];
+  }
+
+type OmittedTipPost = Omit<TipPost, 'id' | 'updatedAt'>;
+export type TipPostDisplayParams = OmittedTipPost;

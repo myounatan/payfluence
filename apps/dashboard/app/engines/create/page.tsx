@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link"
-import { format, min, set } from "date-fns"
-import SidebarNav from "@/components/SidebarNav";
+import { format } from "date-fns"
 import { Button } from "@repo/ui/components/ui/button";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem } from "@repo/ui/components/ui/dropdown-menu";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@ui/components/ui/card";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@ui/components/ui/select";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@repo/ui/components/ui/dropdown-menu";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@ui/components/ui/card";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@ui/components/ui/select";
 import { Label } from "@ui/components/ui/label"
 import { Switch } from "@ui/components/ui/switch"
 import { Badge } from "@repo/ui/components/ui/badge"
@@ -15,19 +14,17 @@ import WarningCard from "@/components/WarningCard";
 import { Separator } from "@ui/components/ui/separator";
 import { ArrowDown, CalendarIcon, ChevronLeft, Copy, Info, Loader2, Plus, Trash2 } from "lucide-react";
 import { Input } from "@ui/components/ui/input";
-import HeaderNav from "@/components/HeaderNav";
 import SimpleDialog from "@/components/SimpleDialog";
 import { useEffect, useState } from "react";
 import { cn } from "@ui/lib/utils";
-import { AirdropSchema, CHAIN_ID_NAME_MAP, CHAIN_NAMES, CreateTipEngineSchema, SLUG_CHAIN_NAMES, TipEngineSchema } from "@repo/database/types"
+import { CHAIN_ID_NAME_MAP, CreateTipEngine, CreateTipEngineSchema, SLUG_CHAIN_NAMES } from "@repo/database/types"
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@ui/components/ui/form";
 import { Calendar } from "@ui/components/ui/calendar";
 import { useAccount } from "wagmi";
-import ConnectWalletDialog from "@/components/ConnectWalletDialog";
-import { useAvailableTipEngine, useOwnedTokens } from "@/app/lib/queries";
+import { useAvailableTipEngine, useOwnedTokens, useTipEngine } from "@/app/lib/queries";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import TokenSelectorDialog from "@/components/TokenSelectorDialog";
 import SimpleTokenCard from "@/components/SimpleTokenCard";
@@ -40,9 +37,11 @@ const breadcrumbLinks = [
 ]
 
 
-export default function CreateTipEngine() {
+export default function CreateTipEnginePage() {
   const { authToken } = useDynamicContext();
   const { address: walletAddress, isConnected, chainId } = useAccount();
+
+  const { createTipEngine } = useTipEngine(authToken)
 
   const { ownedTokens }  = useOwnedTokens(authToken, walletAddress, chainId);
   const [ selectedTokenAddress, setSelectedTokenAddress ] = useState<string | null>(null);
@@ -63,7 +62,7 @@ export default function CreateTipEngine() {
   const dayAfterTomorrow = new Date(today);
   dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
 
-  const pageForm = useForm<z.infer<typeof CreateTipEngineSchema>>({
+  const pageForm = useForm<CreateTipEngine>({
     resolver: zodResolver(CreateTipEngineSchema),
     defaultValues: {
       tipEngine: {
@@ -241,7 +240,7 @@ export default function CreateTipEngine() {
     console.log(pageForm.getValues(`airdrops.${index}.pointsToTokenRatio`))
   }
 
-  const onSubmit = async (values: z.infer<typeof CreateTipEngineSchema>) => {
+  const onSubmit = async (values: CreateTipEngine) => {
     setLoadingNext(true);
 
     // check uniqueness of tip string and slug in the database

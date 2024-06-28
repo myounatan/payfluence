@@ -14,6 +14,7 @@ userRoute.get('/local', async (c) => {
         message: "User found",
         data: {
           user: {
+            id: user.id,
             email: user.email,
             isSubscribed: user.isSubscribed,
             subscriptionTier: user.subscriptionTier,

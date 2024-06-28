@@ -1,5 +1,5 @@
 {
-  "id": "0fab1bdf-4c1e-4de3-aaa7-d6e2f8a82b35",
+  "id": "3828d5f9-3625-4a8f-b7aa-e34594420a46",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -31,7 +31,8 @@
           "name": "points",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": 0
         },
         "signature": {
           "name": "signature",
@@ -163,6 +164,13 @@
         },
         "require_legacy_account": {
           "name": "require_legacy_account",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "require_power_badge": {
+          "name": "require_power_badge",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
@@ -309,6 +317,12 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "user_id": {
           "name": "user_id",
           "type": "text",
@@ -331,8 +345,14 @@
           "name": "webhook_active",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": false
+        },
+        "webhook_secret": {
+          "name": "webhook_secret",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "slug": {
           "name": "slug",
@@ -417,8 +437,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "tip_engine_id": {
-          "name": "tip_engine_id",
+        "airdrop_id": {
+          "name": "airdrop_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -441,12 +461,54 @@
           "primaryKey": false,
           "notNull": true
         },
+        "receiver_avatar_url": {
+          "name": "receiver_avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sender_avatar_url": {
+          "name": "sender_avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "receiver_username": {
+          "name": "receiver_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sender_username": {
+          "name": "sender_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "receiver_display_name": {
+          "name": "receiver_display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sender_display_name": {
+          "name": "sender_display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "approved": {
           "name": "approved",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
           "default": false
+        },
+        "rejected_reason": {
+          "name": "rejected_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -551,12 +613,19 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "webhook_id": {
+          "name": "webhook_id",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true
         },
-        "webhook_event": {
-          "name": "webhook_event",
+        "webhook_type": {
+          "name": "webhook_type",
           "type": "text",
           "primaryKey": false,
           "notNull": true

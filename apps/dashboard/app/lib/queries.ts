@@ -1,5 +1,5 @@
 import { BreadcrumbLinks } from '@/components/Breadcrumbs';
-import { CHAIN_NAMES, MORALIS_CHAIN_NAMES, User } from '@repo/database/types'
+import { CHAIN_NAMES, CreateTipEngine, MORALIS_CHAIN_NAMES, TipEngine, TipEngineDisplayParams, User } from '@repo/database/types'
 import dotenv from 'dotenv'
 import { useEffect, useState } from 'react';
 dotenv.config()
@@ -46,6 +46,52 @@ export const useAvailableTipEngine = (authToken: string | undefined): { checkAva
   }
 
   return { checkAvailability };
+}
+
+export const useTipEngine = (authToken: string | undefined): {
+  tipEngines: TipEngineDisplayParams[],
+  createTipEngine: (tipEngine: CreateTipEngine, published: boolean) => Promise<{ tipEngineId: string, published: boolean }>,
+  setPublished: (tipEngineId: string, published: boolean) => Promise<boolean>
+} => {
+  const [tipEngines, setTipEngines] = useState<TipEngineDisplayParams[]>([]);
+
+  useEffect(() => {
+    const fetchApi = async () => {
+      const options = {method: 'GET', headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }};
+      fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/lookup`, options).then(response => response.json()).then(jsonData => {
+        setTipEngines(jsonData.data)
+      });
+    }
+
+    fetchApi()
+  }, [authToken]);
+
+  const createTipEngine = async (tipEngine: CreateTipEngine, published: boolean): Promise<{ tipEngineId: string, published: boolean }> => {
+    const options = {method: 'POST', headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${authToken}`
+    }, body: JSON.stringify({ tipEngine })};
+    const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/create&publish=${published === true ? "true" : "false"}`, options)
+    const jsonData = await response.json()
+
+    return { tipEngineId: jsonData.data.tipEngineId, published: jsonData.data.published };
+  }
+
+  const setPublished = async (tipEngineId: string, published: boolean): Promise<boolean> => {
+    const options = {method: 'POST', headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${authToken}`
+    }, body: JSON.stringify({})};
+    const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/setpublish/:${tipEngineId}/${published}`, options)
+    const jsonData = await response.json()
+
+    return jsonData.data.published;
+  }
+
+  return { tipEngines, createTipEngine, setPublished };
 }
 
 export const useOwnedTokens = (

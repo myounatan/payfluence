@@ -6,14 +6,13 @@ import { walletAuth } from 'middleware';
 const tipEngineRoute = new Hono<{ Bindings: Bindings }>()
 
 // return full tip engine info + airdrop info
-tipEngineRoute.get('/lookup/:id', async (c) => {
+tipEngineRoute.get('/lookup', async (c) => {
   try {
-    const { id } = c.req.param();
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Tip engine found",
+        message: "Tip engines found",
         data: {
           
         }

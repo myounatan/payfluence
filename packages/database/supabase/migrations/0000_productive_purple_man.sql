@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS "airdrop_participant" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"airdrop_id" text NOT NULL,
 	"receiver_id" text NOT NULL,
-	"points" integer NOT NULL,
+	"points" integer DEFAULT 0 NOT NULL,
 	"signature" text,
 	"claimable_amount" bigint NOT NULL,
 	"claimed" boolean DEFAULT false,
@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS "airdrop" (
 	"min_tokens_duration" integer DEFAULT 0,
 	"min_casts" integer DEFAULT 0,
 	"require_legacy_account" boolean DEFAULT false,
+	"require_power_badge" boolean DEFAULT false,
 	"custom_api_requirement" text,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
@@ -60,10 +61,12 @@ CREATE TABLE IF NOT EXISTS "subscription_tier_features" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tip_engine" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"name" text NOT NULL,
 	"user_id" text NOT NULL,
 	"chain_id" integer NOT NULL,
 	"webhook_id" text NOT NULL,
-	"webhook_active" boolean DEFAULT false,
+	"webhook_active" boolean DEFAULT false NOT NULL,
+	"webhook_secret" text,
 	"slug" text NOT NULL,
 	"owner_address" text NOT NULL,
 	"token_contract" text NOT NULL,
@@ -78,11 +81,18 @@ CREATE TABLE IF NOT EXISTS "tip_engine" (
 CREATE TABLE IF NOT EXISTS "tip_post" (
 	"id" text PRIMARY KEY NOT NULL,
 	"provider_type" "provider_type" NOT NULL,
-	"tip_engine_id" text NOT NULL,
+	"airdrop_id" text NOT NULL,
 	"amount_tipped" integer NOT NULL,
 	"receiver_id" text NOT NULL,
 	"sender_id" text NOT NULL,
+	"receiver_avatar_url" text,
+	"sender_avatar_url" text,
+	"receiver_username" text,
+	"sender_username" text,
+	"receiver_display_name" text,
+	"sender_display_name" text,
 	"approved" boolean DEFAULT false,
+	"rejected_reason" text,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
 );
@@ -101,8 +111,9 @@ CREATE TABLE IF NOT EXISTS "users" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "webhook_log" (
-	"id" text PRIMARY KEY NOT NULL,
-	"webhook_event" text NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"webhook_id" text NOT NULL,
+	"webhook_type" text NOT NULL,
 	"webhook_payload" text NOT NULL,
 	"processed" boolean DEFAULT false,
 	"created_at" timestamp DEFAULT now(),
