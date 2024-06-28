@@ -302,8 +302,10 @@ export default function CreateTipEnginePage() {
 
       console.log(values);
 
-      const { tipEngineId } = await createTipEngine(values, lastClickedSubmit === "publish");
-      console.log(tipEngineId);
+      console.log("last clicked submit", lastClickedSubmit)
+
+      const { tipEngineId, published } = await createTipEngine(values, lastClickedSubmit === "publish");
+      console.log(tipEngineId, published);
 
       // toast({title: `Tip engine created successfully!`});
 

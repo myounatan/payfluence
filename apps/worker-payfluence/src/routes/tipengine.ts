@@ -128,6 +128,8 @@ tipEngineRoute.post('/create', walletAuth, async (c) => {
     // url query "publish" boolean
     const { publish } = c.req.query();
 
+    console.log("ATTEMPTING TO PUBLISH: " + publish)
+
     let bodyData: CreateTipEngine = await c.req.json();
 
     // verify body data with zod schema
