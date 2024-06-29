@@ -1,6 +1,6 @@
 import { Hono, HonoRequest } from 'hono'
 
-import { AirdropParticipant, createAirdropParticipant, database, fetchDailyAllowance, getAirdropParticipantByIds, getBalanceOf, getDailyBudgetForSenderId, getTipEngineActiveAirdrops, getTipEngineByTipString, getTotalAmountTippedBetweenDatesForSender, getUserAccountAge, incrementAirdropParticipantPoints } from "@repo/database";
+import { AirdropParticipant, TipEngine, createAirdropParticipant, database, fetchDailyAllowance, getAirdropParticipantByIds, getBalanceOf, getTipEngineActiveAirdrops, getTipEngineByTipString, getTotalAmountTippedBetweenDatesForSender, getUserAccountAge, incrementAirdropParticipantPoints } from "@repo/database";
 import { CastWebhookSchema } from 'types';
 import { InferType } from 'yup';
 
@@ -99,7 +99,7 @@ app.post('/cast/created', async (c) => {
 
     // STEP 4
     const db = database(c.env.DATABASE_URL);
-    const tipEngine = await getTipEngineByTipString(db, tipString);
+    const tipEngine: TipEngine = await getTipEngineByTipString(db, tipString);
     const activeAirdrops = await getTipEngineActiveAirdrops(db, tipEngine.id);
 
     if (activeAirdrops.length === 0) {
@@ -175,7 +175,7 @@ app.post('/cast/created', async (c) => {
       airdropParticipant = await getAirdropParticipantByIds(db, activeAirdrops[0].id, parentFid);
       await incrementAirdropParticipantPoints(db, activeAirdrops[0].id, parentFid, tipAmount);
     } catch (e) {
-      airdropParticipant = await createAirdropParticipant(db, activeAirdrops[0].id, parentFid, tipAmount);
+      await createAirdropParticipant(db, tipEngine.id, activeAirdrops[0].id, tipEngine.userId, parentFid, tipAmount);
     }
 
     return new Response("Cast processed successfully", { status: 200 });
