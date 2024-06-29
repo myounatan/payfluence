@@ -1,5 +1,39 @@
 import * as yup from 'yup';
 
+// get User data
+
+export const UsersSchema = yup.object({
+  users: yup.array().of(
+    yup.object({
+      object: yup.string(),
+      fid: yup.number(),
+      custody_address: yup.string(),
+      username: yup.string(),
+      display_name: yup.string(),
+      pfp_url: yup.string().url(),
+      profile: yup.object({
+        bio: yup.object({
+          text: yup.string(),
+        }),
+      }),
+      follower_count: yup.number(),
+      following_count: yup.number(),
+      verifications: yup.array().of(yup.string()),
+      verified_addresses: yup.object({
+        eth_addresses: yup.array().of(yup.string()),
+        sol_addresses: yup.array().of(yup.string()),
+      }),
+      active_status: yup.string(),
+      power_badge: yup.boolean(),
+      viewer_context: yup.object({
+        following: yup.boolean(),
+        followed_by: yup.boolean(),
+      }),
+    })
+  ),
+});
+export type UserType = yup.InferType<typeof UsersSchema>["users"][0];
+
 // webhook data
 
 export const CastWebhookSchema = yup.object({

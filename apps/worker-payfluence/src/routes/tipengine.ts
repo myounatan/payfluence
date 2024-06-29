@@ -124,6 +124,7 @@ tipEngineRoute.post('/setpublish/:id/:published', async (c) => {
     }
 
   } catch (e: any) {
+    console.log(e)
     return new Response(e.message, { status: 500 });
   }
 });

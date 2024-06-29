@@ -3,7 +3,7 @@ import { Config } from '@wagmi/core';
 import dotenv from 'dotenv';
 import { CHAINS, CHAIN_ID_TO_WAGMI_CHAIN_ID, publicClientBaseMainnet, publicClientBaseSepolia } from '@/config/web3';
 import { getAddress } from 'viem';
-import { CreateTipEngine, OmittedAirdrop, TipEngineDisplayParams } from '@repo/database/types';
+import { CreateTipEngine, OmittedAirdrop, OmittedTipPost, TipEngineDisplayParams } from '@repo/database/types';
 import { addWalletHeaders } from '../lib/queries';
 import { ERC20__factory, Payfluence__factory } from '@repo/contracts';
 import { SendTransactionMutate } from 'wagmi/query';
@@ -66,6 +66,14 @@ const TipEngineContextProvider = ({ children, authToken }: TipEngineContextProvi
           airdrop.startDate = new Date(airdrop.startDate);
           airdrop.claimStartDate = new Date(airdrop.claimStartDate);
           airdrop.claimEndDate = airdrop.claimEndDate && new Date(airdrop.claimEndDate);
+        });
+
+        tipEngine.tipPosts.forEach((tipPost: OmittedTipPost) => {
+          if (tipPost.createdAt) {
+            tipPost.createdAt = new Date(tipPost.createdAt);
+          } else {
+            tipPost.createdAt = null; // ??????
+          }
         });
       }
       
@@ -142,7 +150,7 @@ const TipEngineContextProvider = ({ children, authToken }: TipEngineContextProvi
       "Content-Type": "application/json",
       "Authorization": `Bearer ${authToken}`
     }, body: JSON.stringify({})};
-    const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/setpublish/:${tipEngineId}/${published}`, options)
+    const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/setpublish/${tipEngineId}/${published}`, options)
     const jsonData = await response.json()
 
     return jsonData.data.published;

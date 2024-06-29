@@ -25,7 +25,7 @@ interface SocialAvatarProps {
 function SocialAvatar({ avatarUrl, username, displayName }: SocialAvatarProps) {
   return (
     <div className="flex items-center gap-2">
-      <Image
+      <img
         alt={`${displayName}'s avatar`}
         className="rounded-full"
         height="36"
@@ -141,7 +141,19 @@ export default function Page({ params }: { params: { slug: string } }) {
 
 
           <div className="grid grid-cols-4 gap-4 md:gap-8">
-            <Card className="col-span-4">
+            <Card className="col-span-1">
+              <CardHeader>
+                <CardTitle>
+                  Tip String
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <span className=" font-semibold">
+                  {tipEngine.tipString}
+                </span>
+              </CardContent>
+            </Card>
+            <Card className="col-span-3">
               <CardHeader>
                 <CardTitle>
                   Token Balance
@@ -267,9 +279,9 @@ export default function Page({ params }: { params: { slug: string } }) {
                               <TableCell className="font-medium">
                                 <div className="flex flex-auto justify-center items-center">
                                   <SocialAvatar
-                                    avatarUrl={tipPost.senderAvatarUrl || ""}
-                                    displayName={tipPost.senderDisplayName || ""}
-                                    username={tipPost.senderUsername || ""}
+                                    avatarUrl={tipPost.receiverAvatarUrl || ""}
+                                    displayName={tipPost.receiverDisplayName || ""}
+                                    username={tipPost.receiverUsername || ""}
                                   />
                                 </div>
                               </TableCell>

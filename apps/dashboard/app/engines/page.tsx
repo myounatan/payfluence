@@ -33,7 +33,7 @@ const breadcrumbLinks = [
 ]
 
 export default function TipEngines() {
-  const { tipEngines } = useTipEngineContext()
+  const { tipEngines, setPublished } = useTipEngineContext()
 
   const router = useRouter();
 
@@ -182,12 +182,12 @@ export default function TipEngines() {
                                   <span>Edit</span>
                                 </DropdownMenuItem>
                                 {tipEngine.webhookActive ? (
-                                  <DropdownMenuItem className="flex flex-auto gap-2">
+                                  <DropdownMenuItem className="flex flex-auto gap-2" onClick={() => setPublished(tipEngine.id, false)}>
                                     <StopCircle className="h-4 w-4" />
                                     <span>Stop</span>
                                   </DropdownMenuItem>
                                 ) : (
-                                  <DropdownMenuItem className="flex flex-auto gap-2">
+                                  <DropdownMenuItem className="flex flex-auto gap-2" onClick={() => setPublished(tipEngine.id, true)}>
                                     <UploadCloud className="h-4 w-4" />
                                     <span>Publish</span>
                                   </DropdownMenuItem>

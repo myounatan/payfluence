@@ -13,6 +13,7 @@ import { Input } from "@ui/components/ui/input"
 import { Label } from "@ui/components/ui/label"
 import Link from "next/link"
 import { useState } from "react"
+import WarningCard from "./WarningCard"
 
 interface AmountDialogProps {
   title: string
@@ -43,6 +44,7 @@ export default function AmountDialog({ title, description, buttonLabel, execute,
             value={amount.toString()}
             onChange={(e) => setAmount(BigInt(e.target.value))}
           />
+          <WarningCard variant="warn" title="Potential risk" description="By continuing, you acknowledge that the smart contracts are not audited and you take full liability. This is the first iteration of a hackathon project for On-Chain Summer."/>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="ghost">No</Button>

@@ -97,7 +97,7 @@ export async function getTipEngineAllowanceForUser(db: Database, user: User): Pr
   const activeTier = getUserSubscriptionTier(db, user);
 
   if (activeTier === 0) {
-    return 0;
+    return 1; // 0; // during hackathon, we are allowing 1 tip engine for free
   }
 
   const tipEngineCount = await getCountActiveTipEngines(db, user.id);
@@ -359,7 +359,7 @@ export async function getAirdropsForTipEngine(db: Database, tipEngineId: string)
 // Airdrop participant queries
 
 export async function getAirdropParticipantByIds(db: Database, airdropId: string, receiverId: string): Promise<AirdropParticipant> {
-  const airdropParticipants = await db.select().from(AirdropParticipants).where(and(eq(AirdropParticipants.id, airdropId), eq(AirdropParticipants.receiverId, receiverId)));
+  const airdropParticipants = await db.select().from(AirdropParticipants).where(and(eq(AirdropParticipants.airdropId, airdropId), eq(AirdropParticipants.receiverId, receiverId)));
 
   if (airdropParticipants.length === 0) {
     throw new Error(`Airdrop participant with airdrop id ${airdropId} and receiver id ${receiverId} not found`);
@@ -395,7 +395,7 @@ export async function setAirdropParticipantSignature(db: Database, airdropId: st
 export async function incrementAirdropParticipantPoints(db: Database, airdropId: string, receiverId: string, points: number) {
   await db.update(AirdropParticipants).set({
     points: sql`${AirdropParticipants.points} + ${points}`
-  }).where(and(eq(AirdropParticipants.id, airdropId), eq(AirdropParticipants.receiverId, receiverId)));
+  }).where(and(eq(AirdropParticipants.airdropId, airdropId), eq(AirdropParticipants.receiverId, receiverId)));
 }
 
 // Product queries

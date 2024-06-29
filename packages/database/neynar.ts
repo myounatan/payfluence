@@ -65,16 +65,14 @@ export const getUserPopularCasts = async (neynarAPIKey: string, fid: string): Pr
 
 // cloudflare worker
 
-export const fetchDailyAllowance = async (endpoint: string, fid: string): Promise<number> => {
+export const fetchDailyAllowance = async (endpoint: string, airdropId: string, fid: string): Promise<number> => {
   const options = {method: 'GET', headers: {accept: 'application/json'}};
 
-  const response = await fetch(`${endpoint}/${fid}`, options);
+  const response = await fetch(`${endpoint}/allowance/${airdropId}/${fid}`, options);
 
   const data: any = await response.json();
 
-  console.log(data)
-
-  return data.allowance;
+  return data.data.allowance;
 }
 
 // webhook creation
@@ -82,6 +80,8 @@ export const fetchDailyAllowance = async (endpoint: string, fid: string): Promis
 export const createNeynarWebhook = async (neynarAPIKey: string, webhookUrl: string, tipEngineId: string, tipString: string) => {
 
   const strippedTipString = tipString.substring(1);
+
+  const regexPattern = "\\$(" + strippedTipString.toUpperCase() + "|" + strippedTipString.toLowerCase() + ")";
 
   const url = 'https://api.neynar.com/v2/farcaster/webhook';
   const options = {
@@ -92,7 +92,7 @@ export const createNeynarWebhook = async (neynarAPIKey: string, webhookUrl: stri
       'content-type': 'application/json'
     },
     body: JSON.stringify({
-      subscription: {'cast.created': {text: `\$(${strippedTipString.toUpperCase}|${strippedTipString.toLowerCase()})`}},
+      subscription: {'cast.created': {text: regexPattern}},
       name: tipEngineId,
       url: webhookUrl
     })
@@ -105,10 +105,13 @@ export const createNeynarWebhook = async (neynarAPIKey: string, webhookUrl: stri
     throw Error("Webhook creation failed")
   }
 
-  console.log("neynar webhook created")
-  console.log(await response.json())
+  const data = await response.json();
 
-  return await response.json();
+  console.log("neynar webhook created")
+  console.log(data)
+  console.log(data.webhook.secrets)
+
+  return data;
 }
 
 export const deleteNeynarWebhook = async (neynarAPIKey: string, webhookId: string): Promise<boolean> => {

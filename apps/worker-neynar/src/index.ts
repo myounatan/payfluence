@@ -1,7 +1,7 @@
 import { Hono, HonoRequest } from 'hono'
 
-import { AirdropParticipant, TipEngine, createAirdropParticipant, database, fetchDailyAllowance, getAirdropParticipantByIds, getBalanceOf, getTipEngineActiveAirdrops, getTipEngineByTipString, getTotalAmountTippedBetweenDatesForSender, getUserAccountAge, incrementAirdropParticipantPoints } from "@repo/database";
-import { CastWebhookSchema } from 'types';
+import { AirdropParticipant, TipEngine, createAirdropParticipant, createTipPost, database, fetchDailyAllowance, getAirdropParticipantByIds, getBalanceOf, getTipEngineActiveAirdrops, getTipEngineByTipString, getTotalAmountTippedBetweenDatesForSender, getUserAccountAge, incrementAirdropParticipantPoints } from "@repo/database";
+import { CastWebhookSchema, UserType, UsersSchema } from 'types';
 import { InferType } from 'yup';
 
 // const { createHmac } = require("node:crypto")
@@ -13,10 +13,34 @@ type Bindings = {
   TEST_WEBHOOK_SECRET: string
   ALCHEMY_BASE_SEPOLIA: string
   ALCHEMY_BASE_MAINNET: string
+  DAILY_ALLOWANCE_WORKER: string
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
 app.fire()
+
+const fetchUserBasedOnFid = async (neynarAPIKey: string, fid: string): Promise<UserType | null> => {
+  const options = {
+    method: 'GET',
+    headers: {accept: 'application/json', api_key: neynarAPIKey}
+  };
+
+  const response = await fetch(`https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}&viewer_fid=3`, options);
+
+  const data = await response.json();
+  UsersSchema.validate(data);
+
+  const validatedData: InferType<typeof UsersSchema> = data;
+  const users = validatedData.users;
+
+  let user: UserType = null
+
+  if (users.length > 0) {
+    user = users[0];
+  }
+
+  return user;
+}
 
 /*
 
@@ -91,6 +115,16 @@ app.post('/cast/created', async (c) => {
       return new Response("Parent fid is required", { status: 200 });
     }
 
+    // fetch parent user
+    let parentUser: UserType;
+    try {
+      parentUser = await fetchUserBasedOnFid(c.env.NEYNAR_API_KEY, parentFid);
+      console.log(parentUser);
+    } catch (e) {
+      console.log(e);
+      return new Response("Parent user not found", { status: 200 });
+    }
+
     if (senderFid === parentFid) {
       return new Response("Sender and parent fid are the same, can not tip yourself!", { status: 200 });
     }
@@ -111,10 +145,10 @@ app.post('/cast/created', async (c) => {
 
     // STEP 5
     const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    todayStart.setUTCHours(0, 0, 0, 0);
 
     const todayEnd = new Date();
-    todayEnd.setHours(23, 59, 59, 999);
+    todayEnd.setUTCHours(23, 59, 59, 999);
 
     const totalPointsSentToday = await getTotalAmountTippedBetweenDatesForSender(
       db,
@@ -123,9 +157,47 @@ app.post('/cast/created', async (c) => {
       todayEnd
     );
 
-    const dailyBudget = await fetchDailyAllowance(c.env.NEYNAR_API_KEY, senderFid);
+    console.log(`${c.env.DAILY_ALLOWANCE_WORKER}/allowance/${airdrop.id}/${senderFid}`)
+
+    const dailyBudget = await fetchDailyAllowance(c.env.DAILY_ALLOWANCE_WORKER, airdrop.id, senderFid);
+
+
+    console.log("totalPointsSentToday", totalPointsSentToday);
+    console.log("dailyBudget", dailyBudget);
+    console.log("tipAmount", tipAmount);
+    console.log("diff, dailyBudget - totalPointsSentToday ", dailyBudget - totalPointsSentToday);
+    console.log("totalPointsSentToday + tipAmount ", totalPointsSentToday + tipAmount);
+
+    const createTipPostWithReason = async (approved: boolean, rejectedReason?: string) => {
+      await createTipPost(db, {
+        id: bodyData.data.hash,
+        providerType: "Farcaster",
+        tipEngineId: tipEngine.id,
+        airdropId: airdrop.id,
+        amountTipped: tipAmount,
+        receiverId: parentFid,
+        senderId: senderFid,
+        receiverAvatarUrl: parentUser.pfp_url,
+        senderAvatarUrl: bodyData.data.author.pfp_url,
+        receiverUsername: parentUser.username,
+        senderUsername: bodyData.data.author.username,
+        receiverDisplayName: parentUser.display_name,
+        senderDisplayName: bodyData.data.author.display_name,
+        approved,
+        rejectedReason
+      });
+    }
+
+    if (dailyBudget === null || dailyBudget === undefined) {
+      await createTipPostWithReason(false, "No daily budget found");
+
+      console.log("No daily budget found")
+      return new Response("No daily budget found", { status: 200 });
+    }
 
     if (totalPointsSentToday + tipAmount > dailyBudget) {
+      await createTipPostWithReason(false, "Sender will exceed their daily budget");
+
       console.log("Sender will exceed their daily budget")
       return new Response("Sender will exceed their daily budget", { status: 200 });
     }
@@ -135,6 +207,8 @@ app.post('/cast/created', async (c) => {
       const { signUpDate } = await getUserAccountAge(c.env.NEYNAR_API_KEY, senderFid);
 
       if (signUpDate > airdrop.startDate) {
+        await createTipPostWithReason(false, "Sender does not have a legacy account");
+
         console.log("Sender does not have a legacy account")
         return new Response("Sender does not have a legacy account", { status: 200 });
       }
@@ -143,6 +217,8 @@ app.post('/cast/created', async (c) => {
     // STEP 6b
     if (airdrop.requirePowerBadge) {
       if (!bodyData.data.author.power_badge) {
+        await createTipPostWithReason(false, "Sender does not have a power badge");
+
         console.log("Sender does not have a power badge")
         return new Response("Sender does not have a power badge", { status: 200 });
       }
@@ -163,22 +239,31 @@ app.post('/cast/created', async (c) => {
         console.log(data);
 
         // if (data < minimumBalanceRequired) {
-        //   console.log("Sender does not have the minimum balance required")
-        //   return new Response("Sender does not have the minimum balance required", { status: 200 });
+        //   await createTipPostWithReason(false, "Sender does not have the minimum token balance required");
+
+        //   console.log("Sender does not have the minimum token balance required")
+        //   return new Response("Sender does not have the minimum token balance required", { status: 200 });
         // }
       }
     }
 
+    await createTipPostWithReason(true);
+
     // STEP 7
     let airdropParticipant: AirdropParticipant;
     try {
+      console.log("incrementing airdrop participant....")
       airdropParticipant = await getAirdropParticipantByIds(db, activeAirdrops[0].id, parentFid);
+      console.log("airdropParticipant", airdropParticipant);
       await incrementAirdropParticipantPoints(db, activeAirdrops[0].id, parentFid, tipAmount);
+      return new Response("Cast processed successfully", { status: 200 });
     } catch (e) {
+      console.log(e)
       await createAirdropParticipant(db, tipEngine.id, activeAirdrops[0].id, tipEngine.userId, parentFid, tipAmount);
+      return new Response("Cast processed successfully", { status: 200 });
     }
+    
 
-    return new Response("Cast processed successfully", { status: 200 });
   } catch (e: any) {
     console.log(e)
     return new Response(e.message, { status: 500 });
