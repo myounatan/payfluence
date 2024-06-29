@@ -73,7 +73,7 @@ export default function HeaderNav({ breadcrumbLinks }: HeaderNavProps) {
               {localUser.email}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogOut}>Logout</DropdownMenuItem>
           </DropdownMenuContent>

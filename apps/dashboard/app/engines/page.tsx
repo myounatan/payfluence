@@ -2,12 +2,10 @@
 
 import Link from "next/link"
 import Image from "next/image";
-import SidebarNav from "@/components/SidebarNav";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@repo/ui/components/ui/breadcrumb";
 import { Button } from "@repo/ui/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem } from "@repo/ui/components/ui/dropdown-menu";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@ui/components/ui/card";
-import { ListFilter, PlusCircle, MoreHorizontal, File, Plus, Filter, Info, Users, View, Edit, StopCircle, Upload, UploadCloud, Download } from "lucide-react";
+import { MoreHorizontal, Plus, Filter, Users, View, Edit, StopCircle, UploadCloud } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -23,63 +21,19 @@ import {
   TableRow,
 } from "@repo/ui/components/ui/table"
 import { Badge } from "@repo/ui/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@ui/components/ui/tooltip";
 import WarningCard from "@/components/WarningCard";
 import { useRouter } from "next/navigation";
-import HeaderNav from "@/components/HeaderNav";
-import { useTipEngine } from "../lib/queries";
-import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
-import { TipEngineDisplayParams } from "@repo/database/types";
-import { formatUnits } from "viem";
-import { truncate } from "@ui/lib/utils";
 import { CHAIN_IMAGES } from "../lib/images";
 import FundableTokenCard from "@/components/FundableTokenCard";
+import { useTipEngineContext } from "../context/TipEngineContext";
 
 const breadcrumbLinks = [
   // { route: "#", label: "Dashboard" },
   { route: "#", label: "Tip Engines" },
 ]
 
-const mockTipEngines: TipEngineDisplayParams[] = [
-  {
-    id: "1",
-    name: "Laser Lemonade Machine",
-    chainId: 84532,
-    userId: "1",
-    webhookActive: true,
-    slug: "laser-lemonade-machine",
-    ownerAddress: "0x1234",
-    tokenContract: "0x1234",
-    tipString: "Laser Lemonade Machine",
-    publicTimeline: true,
-    createdAt: new Date(),
-    
-    status: "Draft",
-    totalPointsGiven: 1000,
-    totalTokensClaimed: 1000,
-    totalClaimableTokens: 1000,
-    totalParticipants: 1000,
-    tokenBalance: 1000,
-
-    airdrops: [
-      {
-        startDate: new Date(),
-        claimStartDate: new Date(),
-        claimEndDate: new Date(),
-        pointsToTokenRatio: 10,
-        requireLegacyAccount: true,
-        requirePowerBadge: true,
-        minTokens: 0,
-        minCasts: 0,
-      }
-    ]
-  }
-]
-
 export default function TipEngines() {
-  const { authToken } = useDynamicContext()
-  // const { tipEngines } = useTipEngine(authToken)
-  const tipEngines = mockTipEngines
+  const { tipEngines } = useTipEngineContext()
 
   const router = useRouter();
 
@@ -174,7 +128,7 @@ export default function TipEngines() {
                     </TableHeader>
                     <TableBody>
                       {tipEngines.map((tipEngine) => (
-                        <TableRow>
+                        <TableRow key={tipEngine.id}>
                           <TableCell className="hidden sm:table-cell">
                             <Image
                               alt="Product image"
@@ -219,7 +173,7 @@ export default function TipEngines() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem className="flex flex-auto gap-2 pr-12">
+                                <DropdownMenuItem className="flex flex-auto gap-2 pr-12" onClick={() => {router.push(`/engines/${tipEngine.id}`)}}>
                                   <View className="h-4 w-4" />
                                   <span>View Details</span>
                                 </DropdownMenuItem>

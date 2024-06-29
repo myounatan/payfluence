@@ -1,7 +1,8 @@
-import { and, count, eq, gte, lte, sql, sum } from 'drizzle-orm';
+import { and, count, desc, eq, gte, lte, sql, sum } from 'drizzle-orm';
 import { AirdropParticipants, Airdrops, ProductIdSubscriptionTierMap, RestrictedTipStrings, SubscriptionTierFeatures, TipEngines, TipPosts, Users } from './schema';
-import { Airdrop, AirdropParticipant, NewAirdrop, NewTipEngine, NewTipPost, TipEngine, TipPost, User, UserSubscriptionParams } from './types';
+import { Airdrop, AirdropParticipant, NewAirdrop, NewTipEngine, NewTipPost, OmittedAirdrop, OmittedTipPost, TipEngine, TipEngineDisplayParams, TipPost, User, UserSubscriptionParams } from './types';
 import { Database } from './database';
+import { text } from 'drizzle-orm/pg-core';
 
 // User queries
 
@@ -152,6 +153,169 @@ export async function setTipEngineWebhook(db: Database, tipEngineId: string, web
   }).where(eq(TipEngines.id, tipEngineId));
 }
 
+export async function getTipEngineDisplayParams(db: Database, userId: string): Promise<any> {
+  const tipEngineDisplayParams: TipEngineDisplayParams[] = [];
+
+  // create a type result for this query
+  type TipEngineResult = {
+    id: string;
+    name: string;
+    user_id: string;
+    chain_id: number;
+    webhook_active: boolean;
+    slug: string;
+    owner_address: string;
+    token_contract: string;
+    tip_string: string;
+    public_timeline: boolean;
+    created_at: Date;
+    total_participants: number | null;
+    total_points_given: number | null;
+    total_tokens_claimed: number | null;
+    total_claimable_tokens: number | null;
+  }
+
+  const tipEngines: TipEngineResult[] = await db.execute(sql`
+    with
+      user_engines as (
+        select
+          id,
+          name,
+          user_id,
+          chain_id,
+          webhook_active,
+          slug,
+          owner_address,
+          token_contract,
+          tip_string,
+          public_timeline,
+          created_at
+        from
+          tip_engine
+        where
+          text(user_id) = text(${userId})
+      ),
+      user_engine_participants as (
+        select
+          tip_engine_id,
+          count(*) as total_participants,
+          sum(points) as total_points_given,
+          sum(
+            case
+              when claimed = true then claimable_amount
+              else 0
+            end
+          ) as total_tokens_claimed,
+          sum(
+            case
+              when claimed = false then claimable_amount
+              else 0
+            end
+          ) as total_claimable_tokens
+        from
+          airdrop_participant
+        where
+          text(tip_engine_user_id) = text(${userId})
+        group by
+          tip_engine_id
+      )
+    select
+      *
+    from
+      user_engines as e
+    left join
+      user_engine_participants as p
+    on
+      e.id::text = p.tip_engine_id::text;
+  `)
+
+  // transform results into display params array
+  for (const tipEngine of tipEngines) {
+    // map to omitted airdrop type
+    const airdrops: Airdrop[] = await getAirdropsForTipEngine(db, tipEngine.id);
+
+    // get status from airdrop dates
+    // if published tip engine, then process dates for status (status being the active airdrop)
+    // otherwise, status is draft
+    let status = 'Draft';
+  
+    if (tipEngine.webhook_active) {
+      for (let i=0; i<airdrops.length; i++) {
+        const airdrop = airdrops[i];
+        if (airdrop.startDate < new Date() && airdrop.claimStartDate > new Date()) {
+          status = `Airdrop ${i + 1}`;
+          break
+        }
+      }
+
+      if (status === 'draft') {
+        status = 'Inactive';
+      }
+    }
+  
+    const omittedAirdrops: OmittedAirdrop[] = airdrops.map((airdrop) => {
+      return {
+        startDate: airdrop.startDate,
+        claimStartDate: airdrop.claimStartDate,
+        claimEndDate: airdrop.claimEndDate,
+        pointsToTokenRatio: airdrop.pointsToTokenRatio,
+        requireLegacyAccount: airdrop.requireLegacyAccount,
+        requirePowerBadge: airdrop.requirePowerBadge,
+        minTokens: airdrop.minTokens,
+        minCasts: airdrop.minCasts,
+      }
+    });
+
+    const tipPosts: TipPost[] = await getLast10TipPostsForTipEngine(db, tipEngine.id);
+
+    const omittedTipPosts: OmittedTipPost[] = tipPosts.map((tipPost) => {
+      return {
+        providerType: tipPost.providerType,
+        airdropId: tipPost.airdropId,
+        amountTipped: tipPost.amountTipped,
+        approved: tipPost.approved,
+        createdAt: tipPost.createdAt,
+        
+        receiverId: tipPost.receiverId,
+        receiverUsername: tipPost.receiverUsername,
+        receiverAvatarUrl: tipPost.receiverAvatarUrl,
+        receiverDisplayName: tipPost.receiverDisplayName,
+
+        senderId: tipPost.senderId,
+        senderAvatarUrl: tipPost.senderAvatarUrl,
+        senderDisplayName: tipPost.senderDisplayName,
+        senderUsername: tipPost.senderUsername,
+
+        rejectedReason: tipPost.rejectedReason,
+      }
+    });
+
+    tipEngineDisplayParams.push({
+      userId: tipEngine.user_id,
+      id: tipEngine.id,
+      name: tipEngine.name,
+      chainId: tipEngine.chain_id,
+      webhookActive: tipEngine.webhook_active,
+      slug: tipEngine.slug,
+      ownerAddress: tipEngine.owner_address,
+      tokenContract: tipEngine.token_contract,
+      tipString: tipEngine.tip_string,
+      publicTimeline: tipEngine.public_timeline,
+      createdAt: tipEngine.created_at,
+      status,
+      totalPointsGiven: tipEngine.total_points_given || 0 as number,
+      totalTokensClaimed: tipEngine.total_tokens_claimed || 0,
+      totalClaimableTokens: tipEngine.total_claimable_tokens || 0,
+      totalParticipants: tipEngine.total_participants || 0,
+      tokenBalance: 0,
+      airdrops: omittedAirdrops,
+      tipPosts: omittedTipPosts,
+    });
+  }
+
+  return tipEngineDisplayParams;
+}
+
 // Airdrop queries
 
 export async function createAirdrop(db: Database, airdropParams: NewAirdrop): Promise<void> {
@@ -178,6 +342,10 @@ export async function getAirdropById(db: Database, airdropId: string): Promise<A
   return airdrops[0];
 }
 
+export async function getAirdropsForTipEngine(db: Database, tipEngineId: string) {
+  return db.select().from(Airdrops).where(eq(Airdrops.tipEngineId, tipEngineId));
+}
+
 // Airdrop participant queries
 
 export async function getAirdropParticipantByIds(db: Database, airdropId: string, receiverId: string): Promise<AirdropParticipant> {
@@ -190,8 +358,17 @@ export async function getAirdropParticipantByIds(db: Database, airdropId: string
   return airdropParticipants[0];
 }
 
-export async function createAirdropParticipant(db: Database, airdropId: string, receiverId: string, startingPoints?: number): Promise<void> {
+export async function createAirdropParticipant(
+  db: Database,
+  tipEngineId: string,
+  airdropId: string,
+  tipEngineOwnerId: string,
+  receiverId: string,
+  startingPoints?: number
+): Promise<void> {
   await db.insert(AirdropParticipants).values({
+    tipEngineId: tipEngineId,
+    tipEngineUserId: tipEngineOwnerId,
     airdropId,
     receiverId,
     claimableAmount: BigInt(0),
@@ -226,6 +403,10 @@ export async function getSubscriptionTierFromProductId(db: Database, productId: 
 // webhook log queries
 
 // tip post queries
+
+export async function getLast10TipPostsForTipEngine(db: Database, tipEngineId: string): Promise<TipPost[]> {
+  return db.select().from(TipPosts).where(eq(TipPosts.tipEngineId, tipEngineId)).orderBy(desc(TipPosts.createdAt)).limit(10);
+}
 
 export async function createTipPost(db: Database, tipPostParams: NewTipPost): Promise<void> {
   await db.insert(TipPosts).values(tipPostParams);

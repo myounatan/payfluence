@@ -1,10 +1,10 @@
 import { BreadcrumbLinks } from '@/components/Breadcrumbs';
-import { CHAIN_NAMES, CreateTipEngine, MORALIS_CHAIN_NAMES, TipEngine, TipEngineDisplayParams, User } from '@repo/database/types'
+import { CHAIN_NAMES, CreateTipEngine, MORALIS_CHAIN_NAMES, OmittedAirdrop, TipEngine, TipEngineDisplayParams, User } from '@repo/database/types'
 import dotenv from 'dotenv'
 import { useEffect, useState } from 'react';
 dotenv.config()
 
-const addWalletHeaders = (walletAddress: string) => {
+export const addWalletHeaders = (walletAddress: string) => {
   return {
     "X-Wallet-Address": walletAddress,
     "X-Wallet-Signature": localStorage.getItem("X-Wallet-Signature") || ""
@@ -48,52 +48,74 @@ export const useAvailableTipEngine = (authToken: string | undefined): { checkAva
   return { checkAvailability };
 }
 
-export const useTipEngine = (authToken: string | undefined): {
-  tipEngines: TipEngineDisplayParams[],
-  createTipEngine: (tipEngine: CreateTipEngine, published: boolean) => Promise<{ tipEngineId: string, published: boolean }>,
-  setPublished: (tipEngineId: string, published: boolean) => Promise<boolean>
-} => {
-  const [tipEngines, setTipEngines] = useState<TipEngineDisplayParams[]>([]);
+// export const useTipEngine = (authToken: string | undefined): {
+//   tipEngines: TipEngineDisplayParams[],
+//   createTipEngine: (tipEngine: CreateTipEngine, published: boolean) => Promise<{ tipEngineId: string, published: boolean }>,
+//   addFunds: (tipEngineId: string, amount: number) => Promise<boolean>,
+//   withdrawFunds: (tipEngineId: string, amount: number) => Promise<boolean>,
+//   setPublished: (tipEngineId: string, published: boolean) => Promise<boolean>
+// } => {
+//   const [tipEngines, setTipEngines] = useState<TipEngineDisplayParams[]>([]);
 
-  useEffect(() => {
-    const fetchApi = async () => {
-      const options = {method: 'GET', headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${authToken}`
-      }};
-      fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/lookup`, options).then(response => response.json()).then(jsonData => {
-        setTipEngines(jsonData.data)
-      });
-    }
+//   useEffect(() => {
+//     const fetchApi = async () => {
+//       const options = {method: 'GET', headers: {
+//         "Content-Type": "application/json",
+//         "Authorization": `Bearer ${authToken}`
+//       }};
+//       fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/all`, options).then(response => response.json()).then(jsonData => {
+//         console.log(jsonData);
+//         // convert dates from string to date objects
+//         jsonData.data.tipEngines.forEach((tipEngine: any) => {
+//           tipEngine.airdrops.forEach((airdrop: any) => {
+//             airdrop.startDate = new Date(airdrop.startDate);
+//             airdrop.claimStartDate = new Date(airdrop.claimStartDate);
+//             airdrop.claimEndDate = new Date(airdrop.claimEndDate);
+//           });
+//         });
+        
+//         setTipEngines(jsonData.data.tipEngines)
+//       });
+//     }
 
-    fetchApi()
-  }, [authToken]);
+//     fetchApi()
+//   }, [authToken]);
 
-  const createTipEngine = async (createParams: CreateTipEngine, published: boolean): Promise<{ tipEngineId: string, published: boolean }> => {
-    const options = {method: 'POST', headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${authToken}`,
-      ...addWalletHeaders(createParams.tipEngine.ownerAddress)
-    }, body: JSON.stringify({ ...createParams })};
-    const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/create?publish=${published === true ? "true" : "false"}`, options)
-    const jsonData = await response.json()
+//   const createTipEngine = async (createParams: CreateTipEngine, published: boolean): Promise<{ tipEngineId: string, published: boolean }> => {
+//     const options = {method: 'POST', headers: {
+//       "Content-Type": "application/json",
+//       "Authorization": `Bearer ${authToken}`,
+//       ...addWalletHeaders(createParams.tipEngine.ownerAddress)
+//     }, body: JSON.stringify({ ...createParams })};
+//     const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/create?publish=${published === true ? "true" : "false"}`, options)
+//     const jsonData = await response.json()
 
-    return { tipEngineId: jsonData.data.tipEngineId, published: jsonData.data.published };
-  }
+//     // TODO: get tip engine in result and add to tipEngines
 
-  const setPublished = async (tipEngineId: string, published: boolean): Promise<boolean> => {
-    const options = {method: 'POST', headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${authToken}`
-    }, body: JSON.stringify({})};
-    const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/setpublish/:${tipEngineId}/${published}`, options)
-    const jsonData = await response.json()
+//     return { tipEngineId: jsonData.data.tipEngineId, published: jsonData.data.published };
+//   }
 
-    return jsonData.data.published;
-  }
+//   const addFunds = async (tipEngineId: string, amount: number): Promise<boolean> => {
+//     return true
+//   }
 
-  return { tipEngines, createTipEngine, setPublished };
-}
+//   const withdrawFunds = async (tipEngineId: string, amount: number): Promise<boolean> => {
+//     return true
+//   }
+
+//   const setPublished = async (tipEngineId: string, published: boolean): Promise<boolean> => {
+//     const options = {method: 'POST', headers: {
+//       "Content-Type": "application/json",
+//       "Authorization": `Bearer ${authToken}`
+//     }, body: JSON.stringify({})};
+//     const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/setpublish/:${tipEngineId}/${published}`, options)
+//     const jsonData = await response.json()
+
+//     return jsonData.data.published;
+//   }
+
+//   return { tipEngines, createTipEngine, addFunds, withdrawFunds, setPublished };
+// }
 
 export const useOwnedTokens = (
   authToken: string | undefined,

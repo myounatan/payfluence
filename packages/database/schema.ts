@@ -78,7 +78,7 @@ export const TipEngines = pgTable('tip_engine', {
   name: text('name').notNull(),
 
   // user owns a tip engine
-  userId: text('user_id').notNull(),
+  userId: uuid('user_id').notNull(),
 
   chainId: integer('chain_id').notNull(),
 
@@ -102,7 +102,7 @@ export const Airdrops = pgTable('airdrop', {
   id: uuid('id').defaultRandom().primaryKey(),
 
   // tip engine owns an airdrop
-  tipEngineId: text('tip_engine_id').notNull(),
+  tipEngineId: uuid('tip_engine_id').notNull(),
 
   tokenAmount: bigint('token_amount', { mode: 'bigint' }).notNull(), // not really in use?
 
@@ -156,7 +156,8 @@ export const TipPosts = pgTable('tip_post', {
   id: text('id').primaryKey(), // post id
   providerType: ProviderType('provider_type').notNull(),
 
-  airdropId: text('airdrop_id').notNull(),
+  tipEngineId: uuid('tip_engine_id').notNull(),
+  airdropId: uuid('airdrop_id').notNull(),
 
   amountTipped: integer('amount_tipped').notNull(),
   receiverId: text('receiver_id').notNull(),
@@ -181,7 +182,9 @@ export const TipPosts = pgTable('tip_post', {
 export const AirdropParticipants = pgTable('airdrop_participant', {
   id: uuid('id').defaultRandom().primaryKey(),
 
-  airdropId: text('airdrop_id').notNull(),
+  tipEngineUserId: uuid('tip_engine_user_id').notNull(),
+  tipEngineId: uuid('tip_engine_id').notNull(),
+  airdropId: uuid('airdrop_id').notNull(),
   receiverId: text('receiver_id').notNull(), // farcaster id, twitter user id, etc
 
   points: integer('points').notNull().default(0),

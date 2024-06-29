@@ -84,20 +84,21 @@ export type CreateTipEngine = z.infer<typeof CreateTipEngineSchema>;
 
 export type OmittedAirdrop = Omit<Airdrop, 'id' | 'tipEngineId' | 'minTokensDuration' | 'customAPIRequirementts' | 'createdAt' | 'updatedAt' | 'customAPIRequirement' | 'tokenAmount'>;
 
+export type OmittedTipPost = Omit<TipPost, 'id' | 'updatedAt' | 'tipEngineId'>;
+
 type OmittedTipEngine = Omit<TipEngine, 'webhookSecret' | 'webhookId' | 'updatedAt'>;
 export type TipEngineDisplayParams =
   OmittedTipEngine &
   {
-    status: string,
-    totalPointsGiven: number,
-    totalTokensClaimed: number,
-    totalClaimableTokens: number,
-    totalParticipants: number,
-    tokenBalance: number,
+    status: string, // derive status from published status, if published then airdrop start and claim dates, if not then draft
+    totalPointsGiven: number, // airdropParticipants.tipEngineId => sum(points)
+    totalTokensClaimed: number, // airdropParticipants.tipEngineId => sum(claimableAmount) & claimed(true)
+    totalClaimableTokens: number, // airdropParticipants.tipEngineId => sum(claimableAmount) & claimed(false)
+    totalParticipants: number, // airdropParticipants.tipEngineId => count()
+    tokenBalance: number, // 0 for now
   } &
   {
     airdrops: OmittedAirdrop[];
-  }
-
-type OmittedTipPost = Omit<TipPost, 'id' | 'updatedAt'>;
-export type TipPostDisplayParams = OmittedTipPost;
+  } & {
+    tipPosts: OmittedTipPost[];
+  };

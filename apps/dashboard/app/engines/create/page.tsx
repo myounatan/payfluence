@@ -18,13 +18,12 @@ import SimpleDialog from "@/components/SimpleDialog";
 import { useEffect, useState } from "react";
 import { cn } from "@ui/lib/utils";
 import { CHAIN_ID_NAME_MAP, CreateTipEngine, CreateTipEngineSchema, SLUG_CHAIN_NAMES } from "@repo/database/types"
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@ui/components/ui/form";
 import { Calendar } from "@ui/components/ui/calendar";
 import { useAccount } from "wagmi";
-import { useAvailableTipEngine, useOwnedTokens, useTipEngine } from "@/app/lib/queries";
+import { useAvailableTipEngine, useOwnedTokens } from "@/app/lib/queries";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import TokenSelectorDialog from "@/components/TokenSelectorDialog";
 import SimpleTokenCard from "@/components/SimpleTokenCard";
@@ -32,6 +31,7 @@ import { switchChain } from '@wagmi/core';
 import { CHAIN_ID_TO_WAGMI_CHAIN_ID, wagmiConfig } from "@/config/web3";
 import { useToast } from "@ui/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import { useTipEngineContext } from "@/app/context/TipEngineContext";
 
 
 const breadcrumbLinks = [
@@ -46,7 +46,7 @@ export default function CreateTipEnginePage() {
   const { authToken } = useDynamicContext();
   const { address: walletAddress, isConnected, chainId } = useAccount();
 
-  const { createTipEngine } = useTipEngine(authToken)
+  const { createTipEngine } = useTipEngineContext()
 
   const { ownedTokens }  = useOwnedTokens(authToken, walletAddress, chainId);
   const [ selectedTokenAddress, setSelectedTokenAddress ] = useState<string | null>(null);

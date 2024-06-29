@@ -6,7 +6,9 @@ END $$;
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "airdrop_participant" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"airdrop_id" text NOT NULL,
+	"tip_engine_user_id" uuid NOT NULL,
+	"tip_engine_id" uuid NOT NULL,
+	"airdrop_id" uuid NOT NULL,
 	"receiver_id" text NOT NULL,
 	"points" integer DEFAULT 0 NOT NULL,
 	"signature" text,
@@ -21,7 +23,7 @@ CREATE TABLE IF NOT EXISTS "airdrop_participant" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "airdrop" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"tip_engine_id" text NOT NULL,
+	"tip_engine_id" uuid NOT NULL,
 	"token_amount" bigint NOT NULL,
 	"start_date" timestamp NOT NULL,
 	"claim_start_date" timestamp NOT NULL,
@@ -62,7 +64,7 @@ CREATE TABLE IF NOT EXISTS "subscription_tier_features" (
 CREATE TABLE IF NOT EXISTS "tip_engine" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
-	"user_id" text NOT NULL,
+	"user_id" uuid NOT NULL,
 	"chain_id" integer NOT NULL,
 	"webhook_id" text NOT NULL,
 	"webhook_active" boolean DEFAULT false NOT NULL,
@@ -81,7 +83,8 @@ CREATE TABLE IF NOT EXISTS "tip_engine" (
 CREATE TABLE IF NOT EXISTS "tip_post" (
 	"id" text PRIMARY KEY NOT NULL,
 	"provider_type" "provider_type" NOT NULL,
-	"airdrop_id" text NOT NULL,
+	"tip_engine_id" uuid NOT NULL,
+	"airdrop_id" uuid NOT NULL,
 	"amount_tipped" integer NOT NULL,
 	"receiver_id" text NOT NULL,
 	"sender_id" text NOT NULL,

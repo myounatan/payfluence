@@ -1,5 +1,5 @@
 {
-  "id": "9ca6eac4-3f42-4c79-bcce-12334d54e962",
+  "id": "f0fad341-fb09-4733-8ebd-bd93249d128a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -15,9 +15,21 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "tip_engine_user_id": {
+          "name": "tip_engine_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tip_engine_id": {
+          "name": "tip_engine_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "airdrop_id": {
           "name": "airdrop_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -106,7 +118,7 @@
         },
         "tip_engine_id": {
           "name": "tip_engine_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -325,7 +337,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -437,9 +449,15 @@
           "primaryKey": false,
           "notNull": true
         },
+        "tip_engine_id": {
+          "name": "tip_engine_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "airdrop_id": {
           "name": "airdrop_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },

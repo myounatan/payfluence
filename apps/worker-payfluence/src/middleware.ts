@@ -45,8 +45,8 @@ export const dynamicAuth = createMiddleware(async (c, next) => {
   const result: any = await jose.jwtVerify(jwt, publicKey, {})
   
   // console.log(protectedHeader)
-  console.log(result.payload)
-  console.log("result", result)
+  // console.log(result.payload)
+  // console.log("result", result)
 
   // add email to context
 

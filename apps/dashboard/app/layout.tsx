@@ -14,6 +14,7 @@ import { WalletContextProvider } from "@/app/context/WalletContext";
 
 import {
   DynamicContextProvider,
+  getAuthToken,
 } from "@dynamic-labs/sdk-react-core";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 
@@ -21,6 +22,7 @@ import { wagmiConfig } from '@/config/web3';
 import SidebarNav from "@/components/SidebarNav";
 import HeaderNav from "@/components/HeaderNav";
 import { Toaster } from "@ui/components/ui/toaster"
+import { TipEngineContextProvider } from "./context/TipEngineContext";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -68,24 +70,30 @@ export default function RootLayout({
                   walletConnectors: [EthereumWalletConnectors],
                 }}
               >
-                {SKIP_LAYOUT_PAGES.includes(pathname) ? (
-                  <>
-                    {children}
-                    <Toaster />
-                  </>
-                ) : (
-                  <div className="grid min-h-screen w-full grid-cols-[220px_1fr] lg:grid-cols-[220px_1fr] bg-slate-100">
 
-                    <SidebarNav />
+                <TipEngineContextProvider authToken={getAuthToken()}>
 
-                    <div className="flex flex-col sm:gap-4 sm:py-4">
-                      <HeaderNav breadcrumbLinks={[]} />
+                  {SKIP_LAYOUT_PAGES.includes(pathname) ? (
+                    <>
                       {children}
                       <Toaster />
+                    </>
+                  ) : (
+                    <div className="grid min-h-screen w-full grid-cols-[220px_1fr] lg:grid-cols-[220px_1fr] bg-slate-100">
+
+                      <SidebarNav />
+
+                      <div className="flex flex-col sm:gap-4 sm:py-4">
+                        <HeaderNav breadcrumbLinks={[]} />
+                        {children}
+                        <Toaster />
+                      </div>
+                      
                     </div>
-                    
-                  </div>
-                )}
+                  )}
+                  
+                </TipEngineContextProvider>
+
               </DynamicContextProvider>
 
             </WalletContextProvider>

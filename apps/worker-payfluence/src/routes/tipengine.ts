@@ -1,25 +1,31 @@
-import { CreateTipEngine, CreateTipEngineSchema, Database, TipEngine, TipEngineSchema, User, createAirdrop, createNeynarWebhook, createTipEngine, database, deleteNeynarWebhook, getTipEngineAllowanceForUser, getTipEngineById, isValidSlug, isValidTipString, setTipEngineWebhook } from '@repo/database';
+import { CreateTipEngine, CreateTipEngineSchema, Database, TipEngine, TipEngineDisplayParams, TipEngineSchema, User, createAirdrop, createNeynarWebhook, createTipEngine, database, deleteNeynarWebhook, getTipEngineAllowanceForUser, getTipEngineById, getTipEngineDisplayParams, isValidSlug, isValidTipString, setTipEngineWebhook } from '@repo/database';
 import { Hono } from 'hono'
 import { Bindings, getUser } from 'index';
 import { walletAuth } from 'middleware';
 
 const tipEngineRoute = new Hono<{ Bindings: Bindings }>()
 
-// return full tip engine info + airdrop info
-tipEngineRoute.get('/lookup', async (c) => {
+// return full tip engine info + airdrop info using TipEngineDisplayParams
+tipEngineRoute.get('/all', async (c) => {
   try {
+
+    const user: User = await getUser(c)
+
+    const db = database(c.env.DATABASE_URL)
+    const tipEngines: TipEngineDisplayParams = await getTipEngineDisplayParams(db, user.id);
 
     return new Response(
       JSON.stringify({
         success: true,
         message: "Tip engines found",
         data: {
-          
+          tipEngines,
         }
       }),
       { status: 200 }
     );
   } catch (e: any) {
+    console.log(e)
     return new Response(e.message, { status: 500 });
   }
 });
@@ -206,6 +212,7 @@ tipEngineRoute.post('/create', walletAuth, async (c) => {
 
     const user: User = await getUser(c);
 
+    // TODO: return full tip engine info
     const tipEngineId = await createTipEngine(db, {
       ...bodyData.tipEngine,
       chainId: Number(bodyData.tipEngine.chainId),
