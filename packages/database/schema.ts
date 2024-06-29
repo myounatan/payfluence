@@ -1,6 +1,6 @@
 import { relations, sql } from 'drizzle-orm';
 
-import { integer, pgTable, serial, text, timestamp, boolean, bigint, pgEnum, uuid, json } from 'drizzle-orm/pg-core';
+import { integer, pgTable, text, timestamp, boolean, bigint, pgEnum, uuid, json } from 'drizzle-orm/pg-core';
 
 export const FeatureFlags = pgTable('feature_flags', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -89,7 +89,12 @@ export const TipEngines = pgTable('tip_engine', {
   slug: text('slug').notNull().unique(),
 
   ownerAddress: text('owner_address').notNull(), // address of EOA that owns the tokens
+
   tokenContract: text('token_contract').notNull(), // address of the token contract we are funding this tip engine with
+  tokenDecimals: integer('token_decimals').notNull(),
+  tokenName: text('token_name').notNull(),
+  tokenSymbol: text('token_symbol').notNull(),
+
   tipString: text('tip_string').notNull().unique(), // ex. "$DEGEN", must be unique to differentiate tip engines
 
   publicTimeline: boolean('public_timeline').default(false),

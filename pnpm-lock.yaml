@@ -26,6 +26,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.6.0
         version: 3.6.0(react-hook-form@7.52.0(react@18.2.0))
+      '@repo/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@repo/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -459,6 +462,9 @@ importers:
       ethers:
         specifier: ^6.4.0
         version: 6.13.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      json-bigint-patch:
+        specifier: ^0.0.8
+        version: 0.0.8
       postgres:
         specifier: ^3.4.4
         version: 3.4.4
@@ -7308,6 +7314,9 @@ packages:
   jsesc@3.0.2:
     resolution: {integrity: sha512-xKqzzWXDttJuOcawBt4KnKHHIf5oQ/Cxax+0PWFG+DFDgHNAdi+TXECADI+RYiFUMmx8792xsMbbgXj4CwnP4g==}
     engines: {node: '>=6'}
+
+  json-bigint-patch@0.0.8:
+    resolution: {integrity: sha512-xa0LTQsyaq8awYyZyuUsporWisZFiyqzxGW8CKM3t7oouf0GFAKYJnqAm6e9NLNBQOCtOLvy614DEiRX/rPbnA==}
 
   json-buffer@3.0.1:
     resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
@@ -19535,6 +19544,8 @@ snapshots:
   jsesc@2.5.2: {}
 
   jsesc@3.0.2: {}
+
+  json-bigint-patch@0.0.8: {}
 
   json-buffer@3.0.1: {}
 

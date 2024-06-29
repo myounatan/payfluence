@@ -2,7 +2,8 @@ import { and, count, desc, eq, gte, lte, sql, sum } from 'drizzle-orm';
 import { AirdropParticipants, Airdrops, ProductIdSubscriptionTierMap, RestrictedTipStrings, SubscriptionTierFeatures, TipEngines, TipPosts, Users } from './schema';
 import { Airdrop, AirdropParticipant, NewAirdrop, NewTipEngine, NewTipPost, OmittedAirdrop, OmittedTipPost, TipEngine, TipEngineDisplayParams, TipPost, User, UserSubscriptionParams } from './types';
 import { Database } from './database';
-import { text } from 'drizzle-orm/pg-core';
+import { ERC20__factory } from '@repo/contracts';
+import 'json-bigint-patch';
 
 // User queries
 
@@ -166,6 +167,9 @@ export async function getTipEngineDisplayParams(db: Database, userId: string): P
     slug: string;
     owner_address: string;
     token_contract: string;
+    token_decimals: number;
+    token_symbol: string;
+    token_name: string;
     tip_string: string;
     public_timeline: boolean;
     created_at: Date;
@@ -187,6 +191,9 @@ export async function getTipEngineDisplayParams(db: Database, userId: string): P
           slug,
           owner_address,
           token_contract,
+          token_decimals,
+          token_symbol,
+          token_name,
           tip_string,
           public_timeline,
           created_at
@@ -307,7 +314,10 @@ export async function getTipEngineDisplayParams(db: Database, userId: string): P
       totalTokensClaimed: tipEngine.total_tokens_claimed || 0,
       totalClaimableTokens: tipEngine.total_claimable_tokens || 0,
       totalParticipants: tipEngine.total_participants || 0,
-      tokenBalance: 0,
+      tokenBalance: BigInt(0),
+      tokenDecimals: tipEngine.token_decimals,
+      tokenSymbol: tipEngine.token_symbol,
+      tokenName: tipEngine.token_name,
       airdrops: omittedAirdrops,
       tipPosts: omittedTipPosts,
     });
@@ -452,4 +462,57 @@ export async function getBalanceOf(rpcUrl: string, walletAddress: string, tokenC
   })
 
   return await response.json();
+}
+
+export async function getTokenMetadata(rpcUrl: string, tokenContract: string): Promise<{ decimals: number, symbol: string, name: string }> {
+  const functions = ['decimals', 'symbol', 'name'];
+
+  const metadata = {
+    decimals: 0,
+    symbol: '',
+    name: '',
+  }
+
+  for (const func of functions) {
+    const payload = {
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "eth_call",
+      "params": [
+        {
+          "data": ERC20__factory.createInterface().getFunction(func as 'decimals' | 'symbol' | 'name').selector,
+          "to": tokenContract,
+        },
+        "latest"
+      ]
+    }
+    
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    const result = await response.json();
+    const data = result.result;
+
+    if (func === 'decimals') {
+      metadata.decimals = parseInt(data);
+    } else {
+      const cleanHex = data.startsWith('0x') ? data.slice(2) : data;
+      const buffer = Buffer.from(cleanHex, 'hex');
+      let text = buffer.toString('utf8');
+      text = text.replace(/[^\x20-\x7E]+/g, '');
+      text = text.trim();
+      
+      if (func === 'symbol') {
+        metadata.symbol = text;
+      } else if (func === 'name') {
+        metadata.name = text;
+      }
+      
+    }
+  }
+
+  return metadata;
 }

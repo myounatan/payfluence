@@ -1,4 +1,4 @@
-import { CreateTipEngine, CreateTipEngineSchema, Database, TipEngine, TipEngineDisplayParams, TipEngineSchema, User, createAirdrop, createNeynarWebhook, createTipEngine, database, deleteNeynarWebhook, getTipEngineAllowanceForUser, getTipEngineById, getTipEngineDisplayParams, isValidSlug, isValidTipString, setTipEngineWebhook } from '@repo/database';
+import { CreateTipEngine, CreateTipEngineSchema, Database, TipEngine, TipEngineDisplayParams, TipEngineSchema, User, createAirdrop, createNeynarWebhook, createTipEngine, database, deleteNeynarWebhook, getTipEngineAllowanceForUser, getTipEngineById, getTipEngineDisplayParams, getTokenMetadata, isValidSlug, isValidTipString, setTipEngineWebhook } from '@repo/database';
 import { Hono } from 'hono'
 import { Bindings, getUser } from 'index';
 import { walletAuth } from 'middleware';
@@ -145,6 +145,8 @@ tipEngineRoute.post('/create', walletAuth, async (c) => {
     console.log(bodyData.airdrops)
     console.log(bodyData.airdrops[0].startDate)
 
+    const chainId = Number(bodyData.tipEngine.chainId);
+
     // check creatorAddress matches authenticated wallet
     const authenticatedAddress: string | null | undefined = c.get('walletAddress' as never);
     if (authenticatedAddress === null || authenticatedAddress === undefined) {
@@ -210,12 +212,49 @@ tipEngineRoute.post('/create', walletAuth, async (c) => {
       );
     }
 
+    // get token metadata
+
+    let decimals: number; let symbol: string; let name: string;
+    try {
+      const getRPCUrl = (): string => {
+        if (chainId === 84532) {
+          return c.env.ALCHEMY_BASE_SEPOLIA;
+        }
+      
+        return c.env.ALCHEMY_BASE_MAINNET;
+      }
+
+      console.log(getRPCUrl())
+      const metadata = await getTokenMetadata(getRPCUrl(), bodyData.tipEngine.tokenContract);
+      decimals = metadata.decimals;
+      symbol = metadata.symbol;
+      name = metadata.name;
+
+      console.log("metadata", metadata)
+    } catch (e: any) {
+      console.log(e)
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Could not get token metadata",
+          data: {
+            availableSlug,
+            availableTipString
+          }
+        }),
+        { status: 409 }
+      );
+    }
+
     const user: User = await getUser(c);
 
     // TODO: return full tip engine info
     const tipEngineId = await createTipEngine(db, {
       ...bodyData.tipEngine,
       chainId: Number(bodyData.tipEngine.chainId),
+      tokenDecimals: decimals,
+      tokenSymbol: symbol,
+      tokenName: name,
       userId: user.id,
       webhookId: "",
     });

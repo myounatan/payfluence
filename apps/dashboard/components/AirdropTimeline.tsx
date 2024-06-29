@@ -113,9 +113,10 @@ interface AirdropTimelineSectionProps {
   title: string;
   active: boolean;
   includeTopLine?: boolean;
+  children: React.ReactNode;
 }
 
-export function AirdropTimelineSection({ date, title, active, includeTopLine }: AirdropTimelineSectionProps) {
+export function AirdropTimelineSection({ date, title, active, includeTopLine, children }: AirdropTimelineSectionProps) {
   return (
     <>
       {includeTopLine && AirdropTimelineLine({ active, size: "small" })}
@@ -136,9 +137,7 @@ export function AirdropTimelineSection({ date, title, active, includeTopLine }: 
           <div className={cn("col-span-3 left-0 top-0 h-full border-l-2", getActiveBorderColor(active))} />
         </div>
         <div className={cn("col-span-4 text-sm flex flex-col mb-6", getActiveTextColor(active))}>
-          <span>bob ross</span>
-          <span>yeah</span>
-          <span>yeah</span>
+          {children}
         </div>
       </div>
     </>

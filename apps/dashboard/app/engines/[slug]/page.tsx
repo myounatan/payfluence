@@ -67,7 +67,16 @@ function buildAirdropTimeline(airdrops: TipEngineDisplayParams["airdrops"]) {
       timeline.push(<AirdropTimelineSectionDiamond date={airdrop.startDate} title="Engine Start" active={new Date() < airdrop.claimStartDate} includeTopLine={false} includeBottomLine={true} />)
     }
     
-    timeline.push(<AirdropTimelineSection date={airdrop.claimStartDate} title={`Airdrop ${i+1}`} active={active} includeTopLine={newMonth} />)
+    timeline.push(<AirdropTimelineSection date={airdrop.claimStartDate} title={`Airdrop ${i+1}`} active={active} includeTopLine={newMonth}>
+      <span className="text-sm text-muted-foreground">Active: {airdrop.startDate.toDateString()}</span>
+      <span className="text-sm text-muted-foreground">{airdrop.pointsToTokenRatio}:1 Points:Tokens</span>
+      <br/>
+      {/* <span className="text-sm">Requirements</span> */}
+      <span className="text-sm text-muted-foreground">{airdrop.minCasts} Min. Casts</span>
+      <span className="text-sm text-muted-foreground">{airdrop.minTokens} Min. Token Balance</span>
+      {airdrop.requireLegacyAccount && <span className="text-sm text-muted-foreground">Legacy Account Required</span>}
+      {airdrop.requirePowerBadge && <span className="text-sm text-muted-foreground">Power Badge Required</span>}
+    </AirdropTimelineSection>)
 
     if (i === airdrops.length - 1) {
       timeline.push(<AirdropTimelineSectionDiamond date={airdrop.claimEndDate || airdrop.claimStartDate} title="Engine Stops" active={false} includeTopLine={false} includeBottomLine={false} />)
@@ -141,7 +150,7 @@ export default function Page({ params }: { params: { slug: string } }) {
               <CardContent>
                 <div className="grid gap-6 gap">
                   <div className="grid gap-3">
-                    <FundableTokenCard token={{ name: "Token", balance: 432876000000000000000, decimals: 18, symbol: "TOK", token_address: "0x1234" }} />
+                    <FundableTokenCard tipEngineId={tipEngine.id} token={{ name: tipEngine.tokenName, symbol: tipEngine.tokenSymbol, balance: tipEngine.tokenBalance, decimals: tipEngine.tokenDecimals }} />
                   </div>
                   {/* <div className="grid gap-3">
                     <span className="font-semibold">Airdrop 1 Participation Requirements</span>
@@ -152,7 +161,7 @@ export default function Page({ params }: { params: { slug: string } }) {
             <Card className="col-span-1">
               <CardHeader>
                 <CardTitle>
-                  Total Points Given
+                  Total Points Tipped
                 </CardTitle>
               </CardHeader>
               <CardContent>

@@ -145,19 +145,19 @@ export default function TipEngines() {
                             <Badge variant="outline">{tipEngine.status}</Badge>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            $499.99
+                            {tipEngine.totalPointsGiven || 0}
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            25
+                            {tipEngine.totalTokensClaimed || 0}
                           </TableCell>  
                           <TableCell className="hidden md:table-cell">
                             <div className="flex flex-auto items-center gap-2">
                               <Users className="h-4 w-4" />
-                              <span>25</span>
+                              <span>{tipEngine.totalParticipants || 0}</span>
                             </div>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            <FundableTokenCard token={{ name: "Token", balance: 432876000000000000000, decimals: 18, symbol: "TOK", token_address: "0x1234" }} />
+                            <FundableTokenCard tipEngineId={tipEngine.id} token={{ name: tipEngine.tokenName, balance: tipEngine.tokenBalance, decimals: tipEngine.tokenDecimals, symbol: tipEngine.tokenSymbol, token_address: tipEngine.tokenContract }} />
                           </TableCell>
                           <TableCell>
                             <DropdownMenu>

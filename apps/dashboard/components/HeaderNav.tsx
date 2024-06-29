@@ -9,11 +9,10 @@ import { useAccount } from "wagmi";
 import { useWalletContext } from "@/app/context/WalletContext";
 import { truncate } from "@ui/lib/utils";
 import { LogOut, UserIcon } from "lucide-react";
-import { getAuthToken, useDynamicContext, useIsLoggedIn } from "@dynamic-labs/sdk-react-core";
+import {  useDynamicContext, useIsLoggedIn } from "@dynamic-labs/sdk-react-core";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { User } from "@repo/database/types";
-import { useLocalUser } from "@/app/lib/queries";
+import { useUserContext } from "@/app/context/UserContext";
 
 interface HeaderNavProps {
   breadcrumbLinks: BreadcrumbLinks;
@@ -31,7 +30,7 @@ export default function HeaderNav({ breadcrumbLinks }: HeaderNavProps) {
     await dynamicLogOut();
   }
 
-  const { localUser } = useLocalUser(authToken);
+  const { localUser } = useUserContext();
 
   useEffect(() => {
     if (localUser) {

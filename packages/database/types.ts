@@ -95,7 +95,7 @@ export type TipEngineDisplayParams =
     totalTokensClaimed: number, // airdropParticipants.tipEngineId => sum(claimableAmount) & claimed(true)
     totalClaimableTokens: number, // airdropParticipants.tipEngineId => sum(claimableAmount) & claimed(false)
     totalParticipants: number, // airdropParticipants.tipEngineId => count()
-    tokenBalance: number, // 0 for now
+    tokenBalance: bigint, // 0 for now
   } &
   {
     airdrops: OmittedAirdrop[];

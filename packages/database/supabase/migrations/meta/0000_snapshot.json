@@ -1,5 +1,5 @@
 {
-  "id": "f0fad341-fb09-4733-8ebd-bd93249d128a",
+  "id": "0f331979-2e3b-425e-bf33-f298552cf7c7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -380,6 +380,24 @@
         },
         "token_contract": {
           "name": "token_contract",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_decimals": {
+          "name": "token_decimals",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_name": {
+          "name": "token_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_symbol": {
+          "name": "token_symbol",
           "type": "text",
           "primaryKey": false,
           "notNull": true

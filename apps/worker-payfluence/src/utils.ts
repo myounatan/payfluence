@@ -1,3 +1,5 @@
+import { Context } from "hono";
+
 export const fetchPublicKey = async (apiKey: string, environmentId: string): Promise<string> => {
   const options = {method: 'GET', headers: {Authorization: `Bearer ${apiKey}`}};
 

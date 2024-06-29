@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useConnect, useAccount, useDisconnect } from 'wagmi';
-import { injected, signMessage } from '@wagmi/core';
-import { walletConnect } from '@wagmi/connectors';
+import { Config } from '@wagmi/core';
 import dotenv from 'dotenv';
-import { wagmiConfig } from '@/config/web3';
-import { SignableMessage } from 'viem';
-import { CreateTipEngine, TipEngineDisplayParams } from '@repo/database/types';
+import { CHAINS, CHAIN_ID_TO_WAGMI_CHAIN_ID, publicClientBaseMainnet, publicClientBaseSepolia } from '@/config/web3';
+import { getAddress } from 'viem';
+import { CreateTipEngine, OmittedAirdrop, TipEngineDisplayParams } from '@repo/database/types';
 import { addWalletHeaders } from '../lib/queries';
+import { ERC20__factory, Payfluence__factory } from '@repo/contracts';
+import { SendTransactionMutate } from 'wagmi/query';
+
 dotenv.config();
  
 
@@ -14,8 +15,8 @@ dotenv.config();
 interface TipEngineContextProps {
   tipEngines: TipEngineDisplayParams[];
   createTipEngine: (tipEngine: CreateTipEngine, published: boolean) => Promise<{ tipEngineId: string, published: boolean }>
-  addFunds: (tipEngineId: string, amount: number) => Promise<boolean>
-  withdrawFunds: (tipEngineId: string, amount: number) => Promise<boolean>
+  addFunds: (sendTransaction: SendTransactionMutate<Config, unknown>, connectedWallet: string, tipEngineId: string, amount: bigint) => Promise<boolean>
+  withdrawFunds: (sendTransaction: SendTransactionMutate<Config, unknown>, connectedWallet: string, tipEngineId: string, amount: bigint) => Promise<boolean>
   setPublished: (tipEngineId: string, published: boolean) => Promise<boolean>
 }
 
@@ -36,19 +37,39 @@ const TipEngineContextProvider = ({ children, authToken }: TipEngineContextProvi
         "Content-Type": "application/json",
         "Authorization": `Bearer ${authToken}`
       }};
-      fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/all`, options).then(response => response.json()).then(jsonData => {
-        console.log(jsonData);
-        // convert dates from string to date objects
-        jsonData.data.tipEngines.forEach((tipEngine: any) => {
-          tipEngine.airdrops.forEach((airdrop: any) => {
-            airdrop.startDate = new Date(airdrop.startDate);
-            airdrop.claimStartDate = new Date(airdrop.claimStartDate);
-            airdrop.claimEndDate = new Date(airdrop.claimEndDate);
-          });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_PAYFLUENCE}/auth/tipengine/all`, options);
+      const jsonData = await response.json();
+
+      console.log(jsonData);
+      // convert dates from string to date objects
+      for (let i = 0; i < jsonData.data.tipEngines.length; i++) {
+        const tipEngine: TipEngineDisplayParams = jsonData.data.tipEngines[i];
+
+        try {
+          const publicClient = tipEngine.chainId === 84532 ? publicClientBaseSepolia : publicClientBaseMainnet;
+
+          const payfluenceBalance = await publicClient.readContract({
+            address: CHAINS[tipEngine.chainId].payfluenceContract,
+            abi: Payfluence__factory.abi,
+            functionName: 'getBalance',
+            args: [tipEngine.id, getAddress(tipEngine.tokenContract)]
+          })
+
+          console.log("payfluenceBalance", payfluenceBalance);
+
+          jsonData.data.tipEngines[i].tokenBalance = payfluenceBalance;
+        } catch (e: any) {
+          console.error("Error getting payfluence balance", e.message)
+        }
+
+        tipEngine.airdrops.forEach((airdrop: OmittedAirdrop) => {
+          airdrop.startDate = new Date(airdrop.startDate);
+          airdrop.claimStartDate = new Date(airdrop.claimStartDate);
+          airdrop.claimEndDate = airdrop.claimEndDate && new Date(airdrop.claimEndDate);
         });
-        
-        setTipEngines(jsonData.data.tipEngines)
-      });
+      }
+      
+      setTipEngines(jsonData.data.tipEngines);
     }
 
     fetchApi()
@@ -68,11 +89,51 @@ const TipEngineContextProvider = ({ children, authToken }: TipEngineContextProvi
     return { tipEngineId: jsonData.data.tipEngineId, published: jsonData.data.published };
   }
 
-  const addFunds = async (tipEngineId: string, amount: number): Promise<boolean> => {
+  const addFunds = async (sendTransaction: SendTransactionMutate<Config, unknown>, connectedWallet: string, tipEngineId: string, amount: bigint): Promise<boolean> => {
+    const tipEngine = tipEngines.find((tipEngine) => tipEngine.id === tipEngineId);
+    if (!tipEngine) {
+      throw new Error('Tip engine not found');
+    }
+
+    amount = amount * BigInt(10 ** tipEngine.tokenDecimals)
+
+    // const publicClient = tipEngine.chainId === 84532 ? publicClientBaseSepolia : publicClientBaseMainnet;
+
+    // console.log("connectedWallet", connectedWallet)
+    // console.log("tipEngine", tipEngine);
+    // console.log("tipEngine.chainId", tipEngine.chainId);
+    // console.log("tipEngine.tokenContract", tipEngine.tokenContract);
+    // console.log("tipEngine.ownerAddress", tipEngine.ownerAddress);
+    // console.log("CHAINS[tipEngine.chainId].payfluenceContract", CHAINS[tipEngine.chainId].payfluenceContract);
+    sendTransaction({
+      chainId: CHAIN_ID_TO_WAGMI_CHAIN_ID[tipEngine.chainId],
+      to: getAddress(tipEngine.tokenContract),
+      data: ERC20__factory.createInterface().encodeFunctionData('approve', [CHAINS[tipEngine.chainId].payfluenceContract, amount]) as `0x${string}`,
+    })
+
+    sendTransaction({
+      chainId: CHAIN_ID_TO_WAGMI_CHAIN_ID[tipEngine.chainId],
+      to: CHAINS[tipEngine.chainId].payfluenceContract,
+      data: Payfluence__factory.createInterface().encodeFunctionData('fundERC20', [tipEngine.id, getAddress(connectedWallet), getAddress(tipEngine.tokenContract), amount]) as `0x${string}`,
+    })
+
     return true
   }
 
-  const withdrawFunds = async (tipEngineId: string, amount: number): Promise<boolean> => {
+  const withdrawFunds = async (sendTransaction: SendTransactionMutate<Config, unknown>, connectedWallet: string, tipEngineId: string, amount: bigint): Promise<boolean> => {
+    const tipEngine = tipEngines.find((tipEngine) => tipEngine.id === tipEngineId);
+    if (!tipEngine) {
+      throw new Error('Tip engine not found');
+    }
+
+    amount = amount * BigInt(10 ** tipEngine.tokenDecimals)
+
+    sendTransaction({
+      chainId: CHAIN_ID_TO_WAGMI_CHAIN_ID[tipEngine.chainId],
+      to: CHAINS[tipEngine.chainId].payfluenceContract,
+      data: Payfluence__factory.createInterface().encodeFunctionData('withdrawERC20', [tipEngine.id, getAddress(connectedWallet), getAddress(tipEngine.tokenContract), amount]) as `0x${string}`,
+    })
+
     return true
   }
 

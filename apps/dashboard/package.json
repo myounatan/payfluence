@@ -15,6 +15,7 @@
     "@dynamic-labs/sdk-react-core": "^2.1.2",
     "@hookform/resolvers": "^3.6.0",
     "@repo/database": "workspace:*",
+    "@repo/contracts": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tanstack/react-query": "^5.20.5",
     "@wagmi/connectors": "^4.1.14",
