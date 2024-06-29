@@ -61,6 +61,7 @@ export interface PayfluenceInterface extends Interface {
       | "eip712Domain"
       | "fundERC20"
       | "fundNative"
+      | "getBalance"
       | "getChainId"
       | "onERC1155BatchReceived"
       | "onERC1155Received"
@@ -130,6 +131,10 @@ export interface PayfluenceInterface extends Interface {
   encodeFunctionData(
     functionFragment: "fundNative",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getBalance",
+    values: [string, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getChainId",
@@ -221,6 +226,7 @@ export interface PayfluenceInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "fundERC20", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "fundNative", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "getBalance", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getChainId", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "onERC1155BatchReceived",
@@ -535,6 +541,12 @@ export interface Payfluence extends BaseContract {
 
   fundNative: TypedContractMethod<[], [void], "payable">;
 
+  getBalance: TypedContractMethod<
+    [id: string, token: AddressLike],
+    [bigint],
+    "view"
+  >;
+
   getChainId: TypedContractMethod<[], [bigint], "view">;
 
   onERC1155BatchReceived: TypedContractMethod<
@@ -689,6 +701,9 @@ export interface Payfluence extends BaseContract {
   getFunction(
     nameOrSignature: "fundNative"
   ): TypedContractMethod<[], [void], "payable">;
+  getFunction(
+    nameOrSignature: "getBalance"
+  ): TypedContractMethod<[id: string, token: AddressLike], [bigint], "view">;
   getFunction(
     nameOrSignature: "getChainId"
   ): TypedContractMethod<[], [bigint], "view">;

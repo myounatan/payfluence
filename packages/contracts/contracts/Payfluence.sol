@@ -115,6 +115,10 @@ contract Payfluence is
     // nothing to do
   }
 
+  function getBalance(string memory id, address token) public view returns (uint256) {
+      return contractBalance[id].erc20[token];
+  }
+
   function fundERC20(
     string memory _airdropId,
     address _owner,

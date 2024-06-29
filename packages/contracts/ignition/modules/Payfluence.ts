@@ -2,7 +2,7 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import dotenv from "dotenv";
 dotenv.config();
 
-const ADMIN_ADDRESS = process.env.ACCOUNT_3_ADDRESS || ""
+const ADMIN_ADDRESS = process.env.DEPLOYER_ADDRESS || ""
 
 const PayfluenceModule = buildModule("PayfluenceModule", (m) => {
 
