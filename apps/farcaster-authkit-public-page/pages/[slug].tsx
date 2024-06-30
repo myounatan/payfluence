@@ -125,7 +125,7 @@ export default function TipEnginePage() {
 
   return (    <>
     <Head>
-      <title>Farcaster AuthKit + NextAuth Demo</title>
+      <title>Public Page Demo</title>
     </Head>
     <main className='flex flex-auto w-screen h-screen justify-center'>
       <AuthKitProvider config={config}>
