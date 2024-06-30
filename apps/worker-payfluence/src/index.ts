@@ -32,6 +32,7 @@ export type Bindings = {
   PAYFLUENCE_NEYNAR_WEBHOOK_URL: string
   ALCHEMY_BASE_SEPOLIA: string
   ALCHEMY_BASE_MAINNET: string
+  DAILY_ALLOWANCE_WORKER: string
 }
 
 // type Variables = JwtVariables

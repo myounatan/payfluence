@@ -1,6 +1,6 @@
 import { and, count, desc, eq, gte, lte, sql, sum } from 'drizzle-orm';
 import { AirdropParticipants, Airdrops, ProductIdSubscriptionTierMap, RestrictedTipStrings, SubscriptionTierFeatures, TipEngines, TipPosts, Users } from './schema';
-import { Airdrop, AirdropParticipant, NewAirdrop, NewTipEngine, NewTipPost, OmittedAirdrop, OmittedTipPost, TipEngine, TipEngineDisplayParams, TipPost, User, UserSubscriptionParams } from './types';
+import { Airdrop, AirdropParticipant, NewAirdrop, NewTipEngine, NewTipPost, OmittedAirdrop, OmittedTipPost, TipEngine, TipEngineDisplayParams, TipEnginePublicDisplayParams, TipPost, User, UserSubscriptionParams } from './types';
 import { Database } from './database';
 import { ERC20__factory } from '@repo/contracts';
 import 'json-bigint-patch';
@@ -152,6 +152,28 @@ export async function setTipEngineWebhook(db: Database, tipEngineId: string, web
     webhookActive,
     webhookSecret: webhookSecret || null,
   }).where(eq(TipEngines.id, tipEngineId));
+}
+
+export async function getTipEnginePublicDisplayParams(tipEngine: TipEngine, airdrop: Airdrop | null): Promise<TipEnginePublicDisplayParams> {
+  // transform into type
+  return {
+    name: tipEngine.name,
+    tipString: tipEngine.tipString,
+    slug: tipEngine.slug,
+    tokenName: tipEngine.tokenName,
+    tokenSymbol: tipEngine.tokenSymbol,
+    tokenContract: tipEngine.tokenContract,
+    tokenDecimals: tipEngine.tokenDecimals,
+    airdrop: airdrop ? {
+      startDate: airdrop.startDate,
+      claimStartDate: airdrop.claimStartDate,
+      claimEndDate: airdrop.claimEndDate,
+      requireLegacyAccount: airdrop.requireLegacyAccount,
+      requirePowerBadge: airdrop.requirePowerBadge,
+      minTokens: airdrop.minTokens,
+      minCasts: airdrop.minCasts,
+    } : null,
+  } satisfies TipEnginePublicDisplayParams;
 }
 
 export async function getTipEngineDisplayParams(db: Database, userId: string): Promise<any> {
@@ -326,6 +348,13 @@ export async function getTipEngineDisplayParams(db: Database, userId: string): P
   return tipEngineDisplayParams;
 }
 
+export async function getTipEngineAndActiveAirdropFromSlug(db: Database, slug: string): Promise<{ tipEngine: TipEngine, airdrop: Airdrop | null }> {
+  const tipEngine = await getTipEngineBySlug(db, slug);
+  const activeAirdrops = await getTipEngineActiveAirdrops(db, tipEngine.id);
+
+  return { tipEngine, airdrop: activeAirdrops.length === 0 ? null : activeAirdrops[0] };
+}
+
 // Airdrop queries
 
 export async function createAirdrop(db: Database, airdropParams: NewAirdrop): Promise<void> {
@@ -374,6 +403,7 @@ export async function createAirdropParticipant(
   airdropId: string,
   tipEngineOwnerId: string,
   receiverId: string,
+  walletAddress: string,
   startingPoints?: number
 ): Promise<void> {
   await db.insert(AirdropParticipants).values({
@@ -381,6 +411,7 @@ export async function createAirdropParticipant(
     tipEngineUserId: tipEngineOwnerId,
     airdropId,
     receiverId,
+    walletAddress,
     claimableAmount: BigInt(0),
     points: startingPoints || 0,
   });

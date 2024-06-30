@@ -6,22 +6,98 @@ import {
   SignTypedDataVersion,
   TypedMessage,
 } from "@metamask/eth-sig-util";
-import { Airdrop, AirdropParticipant, database, getAirdropById, getAirdropParticipantByIds, getTipEngineByAirdropId, setAirdropParticipantSignature, TipEngine } from '@repo/database';
+import { Airdrop, AirdropParticipant, database, fetchDailyAllowance, getAirdropById, getAirdropParticipantByIds, getTipEngineAndActiveAirdropFromSlug, getTipEngineByAirdropId, getTipEnginePublicDisplayParams, getTotalAmountTippedBetweenDatesForSender, setAirdropParticipantSignature, TipEngine, TipEnginePublicDisplayParams } from '@repo/database';
 import { Payfluence } from '@repo/contracts/typechain-types';
 import { CreateAirdropSignature } from 'types';
 
 const publicRoute = new Hono<{ Bindings: Bindings }>()
 
 // returns paginated list of users
-publicRoute.get('/airdrop/:id/leaderboard', async (c) => {
+// publicRoute.get('/airdrop/:id/leaderboard', async (c) => {
+//   try {
+//     return new Response(
+//       JSON.stringify({
+//         success: true,
+//         message: "User found",
+//         data: {
+          
+//         }
+//       }),
+//       { status: 200 }
+//     );
+//   } catch (e: any) {
+//     return new Response(e.message, { status: 500 });
+//   }
+// });
+
+// returns daily allowance, allowance remaining for the day, current tip engine, and air drop id (if applicable)
+publicRoute.get('/slug/:slug/profile/:fid', async (c) => {
   try {
+    const { slug, fid } = c.req.param();
+
+    const db = database(c.env.DATABASE_URL);
+    const { tipEngine, airdrop } = await getTipEngineAndActiveAirdropFromSlug(db, slug);
+
+    if (!tipEngine) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Tip engine not found",
+        }),
+        { status: 400 }
+      );
+    }
+
+    const responseParams: {
+      dailyAllowance: number,
+      allowanceRemaining: number,
+      amountLeft: number,
+      tipEngine: TipEnginePublicDisplayParams,
+    } = {
+      dailyAllowance: 0,
+      allowanceRemaining: 0,
+      amountLeft: 0,
+      tipEngine: await getTipEnginePublicDisplayParams(tipEngine, airdrop),
+    }
+
+    if (!airdrop) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Airdrop not found",
+          data: responseParams
+        }),
+        { status: 200 }
+      );
+    }
+
+    // get daily allowance for fid
+    const dailyAllowance = await fetchDailyAllowance(c.env.DAILY_ALLOWANCE_WORKER, airdrop.id, fid);
+
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+
+    const todayEnd = new Date();
+    todayEnd.setUTCHours(23, 59, 59, 999);
+
+    const totalPointsSentToday = await getTotalAmountTippedBetweenDatesForSender(
+      db,
+      fid,
+      todayStart,
+      todayEnd
+    );
+
+    const amountLeft = dailyAllowance - totalPointsSentToday;
+
+    responseParams.dailyAllowance = dailyAllowance;
+    responseParams.allowanceRemaining = amountLeft;
+    responseParams.amountLeft = amountLeft
+
     return new Response(
       JSON.stringify({
         success: true,
-        message: "User found",
-        data: {
-          
-        }
+        message: "User data found",
+        data: responseParams
       }),
       { status: 200 }
     );
@@ -30,81 +106,45 @@ publicRoute.get('/airdrop/:id/leaderboard', async (c) => {
   }
 });
 
-// returns daily allowance, recent tips sent, recent tips received, etc
-publicRoute.get('/airdrop/:id/profile/:fid', async (c) => {
-  try {
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "User found",
-        data: {
+// // returns paginated list of tips sent by a user
+// publicRoute.get('/airdrop/:id/sent/:fid', async (c) => {
+//   try {
+//     return new Response(
+//       JSON.stringify({
+//         success: true,
+//         message: "User found",
+//         data: {
           
-        }
-      }),
-      { status: 200 }
-    );
-  } catch (e: any) {
-    return new Response(e.message, { status: 500 });
-  }
-});
+//         }
+//       }),
+//       { status: 200 }
+//     );
+//   } catch (e: any) {
+//     return new Response(e.message, { status: 500 });
+//   }
+// });
 
-// returns tip allowance for a user
-publicRoute.get('/airdrop/:id/allowance/:fid', async (c) => {
-  try {
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "User found",
-        data: {
+// // returns paginated list of tips received by a user
+// publicRoute.get('/airdrop/:id/received/:fid', async (c) => {
+//   try {
+//     return new Response(
+//       JSON.stringify({
+//         success: true,
+//         message: "User found",
+//         data: {
           
-        }
-      }),
-      { status: 200 }
-    );
-  } catch (e: any) {
-    return new Response(e.message, { status: 500 });
-  }
-});
-
-// returns paginated list of tips sent by a user
-publicRoute.get('/airdrop/:id/sent/:fid', async (c) => {
-  try {
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "User found",
-        data: {
-          
-        }
-      }),
-      { status: 200 }
-    );
-  } catch (e: any) {
-    return new Response(e.message, { status: 500 });
-  }
-});
-
-// returns paginated list of tips received by a user
-publicRoute.get('/airdrop/:id/received/:fid', async (c) => {
-  try {
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "User found",
-        data: {
-          
-        }
-      }),
-      { status: 200 }
-    );
-  } catch (e: any) {
-    return new Response(e.message, { status: 500 });
-  }
-});
+//         }
+//       }),
+//       { status: 200 }
+//     );
+//   } catch (e: any) {
+//     return new Response(e.message, { status: 500 });
+//   }
+// });
 
 const checkAirdropClaimDate = (airdrop: Airdrop): boolean => {
   const currentDate = new Date();
-  if (currentDate < airdrop.claimStartDate || currentDate > airdrop.claimEndDate) {
+  if (currentDate < airdrop.claimStartDate || airdrop.claimEndDate && currentDate > airdrop.claimEndDate) {
     return false
   }
   return true
@@ -148,7 +188,7 @@ publicRoute.post('/airdrop/:airdropId/signature/:receiverId', async (c) => {
 
       const verifyingContract = c.env.PAYFLUENCE_CONTRACT_ADDRESS;
       const airdropMessage: Payfluence.AirdropMessageStruct = {
-        airdropId: airdropId,
+        airdropId: airdrop.tipEngineId, // actually tip engine in contract
         token: tipEngine.tokenContract,
         owner: tipEngine.ownerAddress,
         recipient: bodyData.walletAddress,

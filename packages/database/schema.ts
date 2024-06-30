@@ -192,6 +192,8 @@ export const AirdropParticipants = pgTable('airdrop_participant', {
   airdropId: uuid('airdrop_id').notNull(),
   receiverId: text('receiver_id').notNull(), // farcaster id, twitter user id, etc
 
+  walletAddress: text('wallet_address').notNull(),
+
   points: integer('points').notNull().default(0),
 
   // signature holds airdrop/tip engine owner confirmation signature, receiver address, airdrop id, and claimable amount

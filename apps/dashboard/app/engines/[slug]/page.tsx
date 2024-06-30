@@ -50,6 +50,7 @@ function SocialAvatar({ avatarUrl, username, displayName }: SocialAvatarProps) {
 function buildAirdropTimeline(airdrops: TipEngineDisplayParams["airdrops"]) {
   let lastMonth = -1;
   let timeline = []
+  let key = 1;
 
   for (let i = 0; i < airdrops.length; i++) {
     const airdrop = airdrops[i]
@@ -58,16 +59,16 @@ function buildAirdropTimeline(airdrops: TipEngineDisplayParams["airdrops"]) {
 
     let newMonth = false;
     if (airdrop.claimStartDate.getMonth() !== lastMonth) {
-      timeline.push(<AirdropTimelineHeader date={airdrop.claimStartDate} />)
+      timeline.push(<AirdropTimelineHeader date={airdrop.claimStartDate} key={key++} />)
       lastMonth = airdrop.claimStartDate.getMonth()
       newMonth = true && i !== 0;
     }
 
     if (i === 0) {
-      timeline.push(<AirdropTimelineSectionDiamond date={airdrop.startDate} title="Engine Start" active={new Date() < airdrop.claimStartDate} includeTopLine={false} includeBottomLine={true} />)
+      timeline.push(<AirdropTimelineSectionDiamond date={airdrop.startDate} title="Engine Start" active={new Date() < airdrop.claimStartDate} includeTopLine={false} includeBottomLine={true} key={key++} />)
     }
     
-    timeline.push(<AirdropTimelineSection date={airdrop.claimStartDate} title={`Airdrop ${i+1}`} active={active} includeTopLine={newMonth}>
+    timeline.push(<AirdropTimelineSection date={airdrop.claimStartDate} title={`Airdrop ${i+1}`} active={active} includeTopLine={newMonth} key={key++} >
       <span className="text-sm text-muted-foreground">Active: {airdrop.startDate.toDateString()}</span>
       <span className="text-sm text-muted-foreground">{airdrop.pointsToTokenRatio}:1 Points:Tokens</span>
       <br/>
@@ -79,7 +80,7 @@ function buildAirdropTimeline(airdrops: TipEngineDisplayParams["airdrops"]) {
     </AirdropTimelineSection>)
 
     if (i === airdrops.length - 1) {
-      timeline.push(<AirdropTimelineSectionDiamond date={airdrop.claimEndDate || airdrop.claimStartDate} title="Engine Stops" active={false} includeTopLine={false} includeBottomLine={false} />)
+      timeline.push(<AirdropTimelineSectionDiamond date={airdrop.claimEndDate || airdrop.claimStartDate} title="Engine Stops" active={false} includeTopLine={false} includeBottomLine={false} key={key++}/>)
     }
   }
 

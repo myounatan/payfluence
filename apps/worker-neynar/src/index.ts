@@ -161,7 +161,6 @@ app.post('/cast/created', async (c) => {
 
     const dailyBudget = await fetchDailyAllowance(c.env.DAILY_ALLOWANCE_WORKER, airdrop.id, senderFid);
 
-
     console.log("totalPointsSentToday", totalPointsSentToday);
     console.log("dailyBudget", dailyBudget);
     console.log("tipAmount", tipAmount);
@@ -259,7 +258,7 @@ app.post('/cast/created', async (c) => {
       return new Response("Cast processed successfully", { status: 200 });
     } catch (e) {
       console.log(e)
-      await createAirdropParticipant(db, tipEngine.id, activeAirdrops[0].id, tipEngine.userId, parentFid, tipAmount);
+      await createAirdropParticipant(db, tipEngine.id, activeAirdrops[0].id, tipEngine.userId, parentFid, verifiedEthAddresses[0], tipAmount);
       return new Response("Cast processed successfully", { status: 200 });
     }
     

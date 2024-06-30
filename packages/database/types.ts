@@ -102,3 +102,29 @@ export type TipEngineDisplayParams =
   } & {
     tipPosts: OmittedTipPost[];
   };
+
+/*
+type OmittedTipEngine = {
+    id: string;
+    name: string;
+    tipString: string;
+    createdAt: Date;
+    userId: string;
+    chainId: number;
+    webhookActive: boolean;
+    slug: string;
+    ownerAddress: string;
+    tokenContract: string;
+    tokenDecimals: number;
+    tokenName: string;
+    tokenSymbol: string;
+    publicTimeline: boolean;
+}
+*/
+
+// show one airdrop at a time, only the active one
+export type AirdropPublicDisplayParams = Omit<OmittedAirdrop, 'pointsToTokenRatio'> | null;
+export type TipEnginePublicDisplayParams =
+  Pick<OmittedTipEngine, 'name' | 'tipString' | 'slug' | 'tokenName' | 'tokenSymbol' | 'tokenContract' | 'tokenDecimals'> & {
+    airdrop: AirdropPublicDisplayParams;
+  }

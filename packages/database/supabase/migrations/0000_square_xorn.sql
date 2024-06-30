@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS "airdrop_participant" (
 	"tip_engine_id" uuid NOT NULL,
 	"airdrop_id" uuid NOT NULL,
 	"receiver_id" text NOT NULL,
+	"wallet_address" text NOT NULL,
 	"points" integer DEFAULT 0 NOT NULL,
 	"signature" text,
 	"claimable_amount" bigint NOT NULL,

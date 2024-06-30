@@ -1,5 +1,5 @@
 {
-  "id": "0f331979-2e3b-425e-bf33-f298552cf7c7",
+  "id": "6aaa77dc-87a9-4366-914a-f1450b6b31c4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -35,6 +35,12 @@
         },
         "receiver_id": {
           "name": "receiver_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "wallet_address": {
+          "name": "wallet_address",
           "type": "text",
           "primaryKey": false,
           "notNull": true
