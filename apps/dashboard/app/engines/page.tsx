@@ -2,12 +2,10 @@
 
 import Link from "next/link"
 import Image from "next/image";
-import SidebarNav from "@/components/SidebarNav";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@repo/ui/components/ui/breadcrumb";
 import { Button } from "@repo/ui/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem } from "@repo/ui/components/ui/dropdown-menu";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@ui/components/ui/card";
-import { ListFilter, PlusCircle, MoreHorizontal, File, Plus, Filter, Info } from "lucide-react";
+import { MoreHorizontal, Plus, Filter, Users, View, Edit, StopCircle, UploadCloud } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -23,10 +21,11 @@ import {
   TableRow,
 } from "@repo/ui/components/ui/table"
 import { Badge } from "@repo/ui/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@ui/components/ui/tooltip";
 import WarningCard from "@/components/WarningCard";
 import { useRouter } from "next/navigation";
-import HeaderNav from "@/components/HeaderNav";
+import { CHAIN_IMAGES } from "../lib/images";
+import FundableTokenCard from "@/components/FundableTokenCard";
+import { useTipEngineContext } from "../context/TipEngineContext";
 
 const breadcrumbLinks = [
   // { route: "#", label: "Dashboard" },
@@ -34,22 +33,15 @@ const breadcrumbLinks = [
 ]
 
 export default function TipEngines() {
+  const { tipEngines, setPublished } = useTipEngineContext()
+
   const router = useRouter();
 
   const onClickNewTipEngine = () => {
     router.push("/engines/create");
   }
 
-
   return (
-    <div className="grid min-h-screen w-full grid-cols-[220px_1fr] lg:grid-cols-[220px_1fr] bg-slate-100">
-
-      <SidebarNav activeMenu="engines" />
-
-      <div className="flex flex-col sm:gap-4 sm:py-4">
-        <HeaderNav breadcrumbLinks={breadcrumbLinks} />
-
-
       <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           <Tabs defaultValue="all">
             <div className="flex items-center">
@@ -89,7 +81,7 @@ export default function TipEngines() {
                     Export
                   </span>
                 </Button> */}
-                <Button variant="highlight-primary" className="hover:bg-highlight-secondary" onClick={onClickNewTipEngine}>
+                <Button variant="highlight-primary" onClick={onClickNewTipEngine}>
                   <Plus className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     New Tip Engine
@@ -112,19 +104,22 @@ export default function TipEngines() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="hidden w-[100px] sm:table-cell">
-                          <span className="sr-only">Image</span>
-                        </TableHead>
+                        <TableHead>Chain</TableHead>
                         <TableHead>Name</TableHead>
-                        <TableHead>Status</TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Price
+                          Status
                         </TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Total Sales
+                          Total Points Given
                         </TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Created at
+                          Total Tokens Claimed
+                        </TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Participants
+                        </TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Token Balance
                         </TableHead>
                         <TableHead>
                           <span className="sr-only">Actions</span>
@@ -132,291 +127,90 @@ export default function TipEngines() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt="Product image"
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src="/placeholder.svg"
-                            width="64"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Laser Lemonade Machine
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Draft</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $499.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          25
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-07-12 10:42 AM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt="Product image"
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src="/placeholder.svg"
-                            width="64"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Hypernova Headphones
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Active</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $129.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          100
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-10-18 03:21 PM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt="Product image"
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src="/placeholder.svg"
-                            width="64"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          AeroGlow Desk Lamp
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Active</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $39.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          50
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-11-29 08:15 AM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt="Product image"
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src="/placeholder.svg"
-                            width="64"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          TechTonic Energy Drink
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">Draft</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $2.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          0
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-12-25 11:59 PM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt="Product image"
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src="/placeholder.svg"
-                            width="64"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Gamer Gear Pro Controller
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Active</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $59.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          75
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2024-01-01 12:00 AM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt="Product image"
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src="/placeholder.svg"
-                            width="64"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Luminous VR Headset
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Active</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $199.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          30
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2024-02-14 02:14 PM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
+                      {tipEngines.map((tipEngine) => (
+                        <TableRow key={tipEngine.id}>
+                          <TableCell className="hidden sm:table-cell">
+                            <Image
+                              alt="Product image"
+                              className="aspect-square rounded-md object-cover"
+                              height="36"
+                              src={CHAIN_IMAGES[tipEngine.chainId]}
+                              width="36"
+                            />
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {tipEngine.name}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{tipEngine.status}</Badge>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {tipEngine.totalPointsGiven || 0}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {tipEngine.totalTokensClaimed || 0}
+                          </TableCell>  
+                          <TableCell className="hidden md:table-cell">
+                            <div className="flex flex-auto items-center gap-2">
+                              <Users className="h-4 w-4" />
+                              <span>{tipEngine.totalParticipants || 0}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            <FundableTokenCard tipEngineId={tipEngine.id} token={{ name: tipEngine.tokenName, balance: tipEngine.tokenBalance, decimals: tipEngine.tokenDecimals, symbol: tipEngine.tokenSymbol, token_address: tipEngine.tokenContract }} />
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  aria-haspopup="true"
+                                  size="icon"
+                                  variant="ghost"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Toggle menu</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem className="flex flex-auto gap-2 pr-12" onClick={() => {router.push(`/engines/${tipEngine.id}`)}}>
+                                  <View className="h-4 w-4" />
+                                  <span>View Details</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="flex flex-auto gap-2">
+                                  <Edit className="h-4 w-4" />
+                                  <span>Edit</span>
+                                </DropdownMenuItem>
+                                {tipEngine.webhookActive ? (
+                                  <DropdownMenuItem className="flex flex-auto gap-2" onClick={() => setPublished(tipEngine.id, false)}>
+                                    <StopCircle className="h-4 w-4" />
+                                    <span>Stop</span>
+                                  </DropdownMenuItem>
+                                ) : (
+                                  <DropdownMenuItem className="flex flex-auto gap-2" onClick={() => setPublished(tipEngine.id, true)}>
+                                    <UploadCloud className="h-4 w-4" />
+                                    <span>Publish</span>
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </CardContent>
                 <CardFooter>
-                  <div className="text-xs text-muted-foreground">
-                    Showing <strong>1-10</strong> of <strong>32</strong>{" "}
-                    products
-                  </div>
+                  {tipEngines.length > 0 &&
+                    <div className="text-xs text-muted-foreground">
+                      Showing <strong>1-{tipEngines.length.toString()}</strong> of <strong>{tipEngines.length.toString()}</strong>{" "}
+                      tip engines
+                    </div>
+                  }
                 </CardFooter>
               </Card>
             </TabsContent>
           </Tabs>
         </main>
-      </div>
-
-    </div>
   )
 }

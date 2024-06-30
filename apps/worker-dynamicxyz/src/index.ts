@@ -18,6 +18,10 @@ app.post('/user/create', async (c) => {
   try {
     // validate webhook signature
     const signature = c.req.header("x-dynamic-signature-256");
+    if (!signature) {
+      return new Response("Signature is required", { status: 400 });
+    }
+
     const bodyData = await c.req.json();
 
     const webhooks = new Webhooks({
@@ -47,8 +51,14 @@ app.post('/user/create', async (c) => {
 
     const db = database(c.env.DATABASE_URL_STAGING);
   
-    const user = await getUserByEmail(db, email);
-    if (user.length > 0) {
+    let user = undefined;
+    try {
+      user = await getUserByEmail(db, email);
+    } catch (e: any) {
+      // console.log(e)
+    }
+
+    if (user != undefined) {
       return new Response(
         JSON.stringify({
           success: false,
@@ -67,7 +77,8 @@ app.post('/user/create', async (c) => {
       }),
       { status: 200 }
     );
-  } catch (e) {
+  } catch (e: any) {
+    console.log(e)
     return new Response(e.message, { status: 500 });
   }
 });

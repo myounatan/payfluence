@@ -1,0 +1,45 @@
+{
+  "name": "farcaster-auth-kit-public-page",
+  "version": "0.1.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@farcaster/auth-client": "^0.1.1",
+    "@farcaster/auth-kit": "*",
+    "@repo/contracts": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@repo/ui": "workspace:*",
+    "@tanstack/react-query": "^5.20.5",
+    "@wagmi/connectors": "^4.1.14",
+    "@wagmi/core": "^2.6.5",
+    "@walletconnect/ethereum-provider": "^2.13.3",
+    "@web3modal/wagmi": "^5.0.3",
+    "add": "^2.0.6",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.12.0",
+    "lucide-react": "^0.399.0",
+    "next": "14.0.4",
+    "next-auth": "^4.24.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.3.0",
+    "tailwindcss-animate": "^1.0.7",
+    "viem": "^2.13.8",
+    "wagmi": "^2.5.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint-config-next": "14.2.1",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}

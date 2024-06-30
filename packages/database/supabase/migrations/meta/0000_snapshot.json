@@ -1,5 +1,5 @@
 {
-  "id": "59e6fa32-f688-4dd3-989d-02e0dac4512a",
+  "id": "6aaa77dc-87a9-4366-914a-f1450b6b31c4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -10,13 +10,26 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tip_engine_user_id": {
+          "name": "tip_engine_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tip_engine_id": {
+          "name": "tip_engine_id",
+          "type": "uuid",
+          "primaryKey": false,
           "notNull": true
         },
         "airdrop_id": {
           "name": "airdrop_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -26,17 +39,24 @@
           "primaryKey": false,
           "notNull": true
         },
+        "wallet_address": {
+          "name": "wallet_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "points": {
           "name": "points",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": 0
         },
         "signature": {
           "name": "signature",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "claimable_amount": {
           "name": "claimable_amount",
@@ -54,6 +74,12 @@
         "claimed_at": {
           "name": "claimed_at",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "claimed_transaction_hash": {
+          "name": "claimed_transaction_hash",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -91,13 +117,14 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "tip_engine_id": {
           "name": "tip_engine_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -113,11 +140,17 @@
           "primaryKey": false,
           "notNull": true
         },
-        "claim_date": {
-          "name": "claim_date",
+        "claim_start_date": {
+          "name": "claim_start_date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
+        },
+        "claim_end_date": {
+          "name": "claim_end_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         },
         "points_to_token_ratio": {
           "name": "points_to_token_ratio",
@@ -149,6 +182,13 @@
         },
         "require_legacy_account": {
           "name": "require_legacy_account",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "require_power_badge": {
+          "name": "require_power_badge",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
@@ -186,9 +226,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "key": {
           "name": "key",
@@ -289,13 +330,26 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chain_id": {
+          "name": "chain_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -309,11 +363,47 @@
           "name": "webhook_active",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": false
+        },
+        "webhook_secret": {
+          "name": "webhook_secret",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner_address": {
+          "name": "owner_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         },
         "token_contract": {
           "name": "token_contract",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_decimals": {
+          "name": "token_decimals",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_name": {
+          "name": "token_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_symbol": {
+          "name": "token_symbol",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -323,6 +413,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "public_timeline": {
+          "name": "public_timeline",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         },
         "created_at": {
           "name": "created_at",
@@ -343,6 +440,13 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
+        "tip_engine_slug_unique": {
+          "name": "tip_engine_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        },
         "tip_engine_tip_string_unique": {
           "name": "tip_engine_tip_string_unique",
           "nullsNotDistinct": false,
@@ -371,7 +475,13 @@
         },
         "tip_engine_id": {
           "name": "tip_engine_id",
-          "type": "text",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "airdrop_id": {
+          "name": "airdrop_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -393,12 +503,54 @@
           "primaryKey": false,
           "notNull": true
         },
+        "receiver_avatar_url": {
+          "name": "receiver_avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sender_avatar_url": {
+          "name": "sender_avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "receiver_username": {
+          "name": "receiver_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sender_username": {
+          "name": "sender_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "receiver_display_name": {
+          "name": "receiver_display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sender_display_name": {
+          "name": "sender_display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "approved": {
           "name": "approved",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
           "default": false
+        },
+        "rejected_reason": {
+          "name": "rejected_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -426,9 +578,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "email": {
           "name": "email",
@@ -459,6 +612,12 @@
         "subscription_expires_at": {
           "name": "subscription_expires_at",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "customer_id": {
+          "name": "customer_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -496,12 +655,19 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "webhook_id": {
+          "name": "webhook_id",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true
         },
-        "webhook_event": {
-          "name": "webhook_event",
+        "webhook_type": {
+          "name": "webhook_type",
           "type": "text",
           "primaryKey": false,
           "notNull": true

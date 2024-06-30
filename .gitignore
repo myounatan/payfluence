@@ -17,3 +17,4 @@ packages/contracts/cache
 .dev.vars
 .staging.vars
 .stage.vars
+.wrangler

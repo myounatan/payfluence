@@ -1,49 +1,91 @@
+"use client";
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@ui/components/ui/dropdown-menu";
 import { Breadcrumbs, BreadcrumbLinks } from "./Breadcrumbs";
 import { Button } from "@ui/components/ui/button";
 import Image from "next/image";
+import ConnectWalletDialog from "@/components/ConnectWalletDialog";
+import { useAccount } from "wagmi";
+import { useWalletContext } from "@/app/context/WalletContext";
+import { truncate } from "@ui/lib/utils";
+import { LogOut, UserIcon } from "lucide-react";
+import {  useDynamicContext, useIsLoggedIn } from "@dynamic-labs/sdk-react-core";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useUserContext } from "@/app/context/UserContext";
 
 interface HeaderNavProps {
   breadcrumbLinks: BreadcrumbLinks;
 }
 
+
 export default function HeaderNav({ breadcrumbLinks }: HeaderNavProps) {
+  const { handleLogOut: dynamicLogOut, user: dynamicUser, authToken, isAuthenticated } = useDynamicContext();
+  const isLoggedIn = useIsLoggedIn();
+  const { disconnectWallet } = useWalletContext();
+  const { address: walletAddress, isConnected } = useAccount();
+  const router = useRouter();
+
+  const handleLogOut = async () => {
+    await dynamicLogOut();
+  }
+
+  const { localUser } = useUserContext();
+
+  useEffect(() => {
+    if (localUser) {
+      console.log("we now have local user!!!!")
+      console.log(localUser)
+    }
+  }, [localUser]);
+
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <header className="sticky top-0 z-30 flex h-[50px] items-center gap-4 px-4 border-0 backdrop-blur-xl bg-opacity-10 sm:px-6 bg-slate-100">
       <Breadcrumbs links={breadcrumbLinks} />
       <div className="relative ml-auto flex-1 md:grow-0">
-        {/* <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="Search..."
-          className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
-        /> */}
+        {isConnected ? (
+            <Button className="" size="xs" variant="outline" onClick={disconnectWallet}>
+              {truncate(walletAddress)}
+              <LogOut className="w-4 h-4 ml-2"/>
+            </Button>
+        ) : (
+          <ConnectWalletDialog title="Connect Wallet" description="Connect your wallet via desktop or mobile.">
+            <Button className="" size="xs" variant="highlight-secondary">
+              Connect Wallet
+            </Button>
+          </ConnectWalletDialog>
+        )}
       </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            className="overflow-hidden rounded-full"
-          >
-            <Image
-              src="/placeholder-user.jpg"
-              width={36}
-              height={36}
-              alt="Avatar"
+      {(localUser?.email && isLoggedIn) ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
               className="overflow-hidden rounded-full"
-            />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Settings</DropdownMenuItem>
-          <DropdownMenuItem>Support</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Logout</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            >
+              <UserIcon className="w-6 h-6" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>
+              {localUser.email}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogOut}>Logout</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        <Button
+          variant="highlight-secondary"
+          size="xs"
+          onClick={() => router.push("/login")}
+        >
+          Login
+        </Button>
+      )}
     </header>
   )
 };

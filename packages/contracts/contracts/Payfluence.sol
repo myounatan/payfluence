@@ -90,8 +90,10 @@ contract Payfluence is
   function verify(
       bytes memory signature,
       AirdropMessage memory airdropMessage
-  ) public view {
+  ) public view returns (bool) {
     _verify(signature, airdropMessage);
+
+    return true;
   }
 
   function claimAirdrop(
@@ -113,6 +115,10 @@ contract Payfluence is
   
   function fundNative() public payable {
     // nothing to do
+  }
+
+  function getBalance(string memory id, address token) public view returns (uint256) {
+      return contractBalance[id].erc20[token];
   }
 
   function fundERC20(
