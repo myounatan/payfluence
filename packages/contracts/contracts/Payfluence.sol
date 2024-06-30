@@ -90,8 +90,10 @@ contract Payfluence is
   function verify(
       bytes memory signature,
       AirdropMessage memory airdropMessage
-  ) public view {
+  ) public view returns (bool) {
     _verify(signature, airdropMessage);
+
+    return true;
   }
 
   function claimAirdrop(

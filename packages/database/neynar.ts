@@ -66,8 +66,9 @@ export const getUserPopularCasts = async (neynarAPIKey: string, fid: string): Pr
 // cloudflare worker
 
 export const fetchDailyAllowance = async (endpoint: string, airdropId: string, fid: string): Promise<number> => {
-  const options = {method: 'GET', headers: {accept: 'application/json'}};
+  const options = {method: 'GET', headers: {accept: 'application/json', 'content-type': 'application/json'}};
 
+  console.log(`${endpoint}/allowance/${airdropId}/${fid}`)
   const response = await fetch(`${endpoint}/allowance/${airdropId}/${fid}`, options);
 
   const data: any = await response.json();

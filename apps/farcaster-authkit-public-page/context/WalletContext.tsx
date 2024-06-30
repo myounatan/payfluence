@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useEffect } from 'react';
 import { useConnect, useAccount, useDisconnect } from 'wagmi';
 import { injected, signMessage } from '@wagmi/core';

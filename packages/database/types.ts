@@ -82,7 +82,7 @@ export const CreateTipEngineSchema = z.object({
 
 export type CreateTipEngine = z.infer<typeof CreateTipEngineSchema>;
 
-export type OmittedAirdrop = Omit<Airdrop, 'id' | 'tipEngineId' | 'minTokensDuration' | 'customAPIRequirementts' | 'createdAt' | 'updatedAt' | 'customAPIRequirement' | 'tokenAmount'>;
+export type OmittedAirdrop = Omit<Airdrop, 'tipEngineId' | 'minTokensDuration' | 'customAPIRequirementts' | 'createdAt' | 'updatedAt' | 'customAPIRequirement' | 'tokenAmount'>;
 
 export type OmittedTipPost = Omit<TipPost, 'id' | 'updatedAt' | 'tipEngineId'>;
 
@@ -125,6 +125,6 @@ type OmittedTipEngine = {
 // show one airdrop at a time, only the active one
 export type AirdropPublicDisplayParams = Omit<OmittedAirdrop, 'pointsToTokenRatio'> | null;
 export type TipEnginePublicDisplayParams =
-  Pick<OmittedTipEngine, 'name' | 'tipString' | 'slug' | 'tokenName' | 'tokenSymbol' | 'tokenContract' | 'tokenDecimals'> & {
+  Pick<OmittedTipEngine, 'id' | 'chainId' | 'name' | 'tipString' | 'slug' | 'tokenName' | 'tokenSymbol' | 'tokenContract' | 'tokenDecimals'> & {
     airdrop: AirdropPublicDisplayParams;
   }

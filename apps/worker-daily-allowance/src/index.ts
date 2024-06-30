@@ -17,7 +17,7 @@ app.fire()
 
 app.use(cors({
   origin: '*',
-  allowHeaders: ['Origin', 'Content-Type', 'Authorization', 'X-Wallet-Address', 'X-Wallet-Signature'],
+  allowHeaders: ['Origin', 'Content-Type', 'Authorization', 'X-Wallet-Address', 'X-Wallet-Signature', 'Accept'],
   allowMethods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }))

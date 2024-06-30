@@ -605,7 +605,7 @@ export interface Payfluence extends BaseContract {
 
   verify: TypedContractMethod<
     [signature: BytesLike, airdropMessage: Payfluence.AirdropMessageStruct],
-    [void],
+    [boolean],
     "view"
   >;
 
@@ -762,7 +762,7 @@ export interface Payfluence extends BaseContract {
     nameOrSignature: "verify"
   ): TypedContractMethod<
     [signature: BytesLike, airdropMessage: Payfluence.AirdropMessageStruct],
-    [void],
+    [boolean],
     "view"
   >;
   getFunction(

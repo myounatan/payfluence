@@ -97,7 +97,7 @@ export async function getTipEngineAllowanceForUser(db: Database, user: User): Pr
   const activeTier = getUserSubscriptionTier(db, user);
 
   if (activeTier === 0) {
-    return 1; // 0; // during hackathon, we are allowing 1 tip engine for free
+    return 5; // 0; // during hackathon, we are allowing 1 tip engine for free
   }
 
   const tipEngineCount = await getCountActiveTipEngines(db, user.id);
@@ -157,6 +157,8 @@ export async function setTipEngineWebhook(db: Database, tipEngineId: string, web
 export async function getTipEnginePublicDisplayParams(tipEngine: TipEngine, airdrop: Airdrop | null): Promise<TipEnginePublicDisplayParams> {
   // transform into type
   return {
+    id: tipEngine.id,
+    chainId: tipEngine.chainId,
     name: tipEngine.name,
     tipString: tipEngine.tipString,
     slug: tipEngine.slug,
@@ -165,6 +167,7 @@ export async function getTipEnginePublicDisplayParams(tipEngine: TipEngine, aird
     tokenContract: tipEngine.tokenContract,
     tokenDecimals: tipEngine.tokenDecimals,
     airdrop: airdrop ? {
+      id: airdrop.id,
       startDate: airdrop.startDate,
       claimStartDate: airdrop.claimStartDate,
       claimEndDate: airdrop.claimEndDate,
@@ -284,6 +287,7 @@ export async function getTipEngineDisplayParams(db: Database, userId: string): P
   
     const omittedAirdrops: OmittedAirdrop[] = airdrops.map((airdrop) => {
       return {
+        id: airdrop.id,
         startDate: airdrop.startDate,
         claimStartDate: airdrop.claimStartDate,
         claimEndDate: airdrop.claimEndDate,
@@ -367,7 +371,7 @@ export async function getTipEngineActiveAirdrops(db: Database, tipEngineId: stri
 
   // check to see if current time is after start date and before claim start date
   return airdrops.filter((airdrop) => {
-    return airdrop.startDate < new Date() && airdrop.claimStartDate > new Date();
+    return airdrop.startDate < new Date();// && airdrop.claimStartDate > new Date();
   });
 }
 
@@ -417,9 +421,10 @@ export async function createAirdropParticipant(
   });
 }
 
-export async function setAirdropParticipantSignature(db: Database, airdropId: string, receiverId: string, signature: string) {
+export async function setAirdropParticipantSignature(db: Database, airdropId: string, receiverId: string, signature: string, claimableAmount: bigint) {
   await db.update(AirdropParticipants).set({
     signature,
+    claimableAmount,
   }).where(and(eq(AirdropParticipants.id, airdropId), eq(AirdropParticipants.receiverId, receiverId)));
 }
 
@@ -458,6 +463,24 @@ export async function getTotalAmountTippedBetweenDatesForSender(db: Database, se
   const result = await db.select({
     totalAmountTipped: sum(TipPosts.amountTipped),
   }).from(TipPosts).where(and(eq(TipPosts.senderId, senderId), gte(TipPosts.createdAt, startDate), lte(TipPosts.createdAt, endDate), eq(TipPosts.approved, true)));
+
+  return Number(result[0].totalAmountTipped);
+}
+
+export async function getTotalAmountTippedBetweenDatesForReceiver(db: Database, receiverId: string, startDate: Date, endDate: Date): Promise<number> {
+  // return all tip posts where the created date is greater than or equal to the start date and less than or equal to the end date
+  const result = await db.select({
+    totalAmountTipped: sum(TipPosts.amountTipped),
+  }).from(TipPosts).where(and(eq(TipPosts.receiverId, receiverId), gte(TipPosts.createdAt, startDate), lte(TipPosts.createdAt, endDate), eq(TipPosts.approved, true)));
+
+  return Number(result[0].totalAmountTipped);
+}
+
+export async function getTotalAmountTippedForAirdropReceiver(db: Database, airdropId: string, receiverId: string): Promise<number> {
+  // return all tip posts where the receiver id is the same as the receiver id passed in and the airdrop id is the same as the airdrop id passed in
+  const result = await db.select({
+    totalAmountTipped: sum(TipPosts.amountTipped),
+  }).from(TipPosts).where(and(eq(TipPosts.receiverId, receiverId), eq(TipPosts.airdropId, airdropId), eq(TipPosts.approved, true)));
 
   return Number(result[0].totalAmountTipped);
 }

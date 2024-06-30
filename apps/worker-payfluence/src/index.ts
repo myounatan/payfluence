@@ -27,7 +27,6 @@ export type Bindings = {
   EIP712_DOMAIN_VERSION: string
   CHAIN_ID: string
   MORALIS_API_KEY: string
-  DAILY_ALLOWANCE_ENDPOINT: string
   NEYNAR_API_KEY: string
   PAYFLUENCE_NEYNAR_WEBHOOK_URL: string
   ALCHEMY_BASE_SEPOLIA: string
