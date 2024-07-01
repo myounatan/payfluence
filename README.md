@@ -1,6 +1,6 @@
 # Payfluence
 
-Memecoin to Dreamcoin. Onchain Summer Buildathon 2024.
+Memecoin to Dreamcoin. Onchain Summer Buildathon 2024. Backdrop Build.
 
 Built with Turborepo.
 
