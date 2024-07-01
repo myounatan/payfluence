@@ -158,7 +158,7 @@ export const WebhookLogs = pgTable('webhook_log', {
 });
 
 export const TipPosts = pgTable('tip_post', {
-  id: text('id').primaryKey(), // post id
+  id: uuid('id').defaultRandom().primaryKey(),
   providerType: ProviderType('provider_type').notNull(),
 
   tipEngineId: uuid('tip_engine_id').notNull(),
