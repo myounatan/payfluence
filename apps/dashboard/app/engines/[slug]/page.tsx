@@ -115,7 +115,7 @@ export default function Page({ params }: { params: { slug: string } }) {
           />
           <span className="text-2xl font-semibold">{tipEngine.name}</span>
           <Badge variant="outline">{tipEngine.status}</Badge>
-          <span className="text-sm text-muted-foreground">payfluence.io/tips/{tipEngine.slug}</span>
+          <span className="text-sm text-muted-foreground">tips.payfluence.io/{tipEngine.slug}</span>
         </div>
 
 

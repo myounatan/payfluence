@@ -84,9 +84,12 @@ export const fetchDailyAllowance = async (endpoint: string, airdropId: string, f
   console.log(`${endpoint}/allowance/${airdropId}/${fid}`)
   const response = await fetch(`${endpoint}/allowance/${airdropId}/${fid}`, options);
 
+  console.log("response ")
+  console.log(JSON.stringify(response))
+
   const data: any = await response.json();
 
-  if (data.data === undefined || data.data === null || data.data.allowance === undefined || data.data.allowance === null) {
+  if (data?.data === undefined || data?.data === null || data?.data?.allowance === undefined || data?.data?.allowance === null) {
     console.log("zero data ", data)
     return 0;
   }

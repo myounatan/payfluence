@@ -240,27 +240,27 @@ app.post('/cast/:tipEngineId/created', async (c) => {
     }
 
     // STEP 6c
-    const minimumBalanceRequired = airdrop.minTokens;
-    if (minimumBalanceRequired > 0) {
-      for (const ethAddress of verifiedEthAddresses) {
-        const walletAddress = ethAddress;
-        const tokenContract = tipEngine.tokenContract;
-        const chainRPC =  tipEngine.chainId === 8453 ?
-                          c.env.ALCHEMY_BASE_MAINNET :
-                          c.env.ALCHEMY_BASE_SEPOLIA;
+    // const minimumBalanceRequired = airdrop.minTokens;
+    // if (minimumBalanceRequired > 0) {
+    //   for (const ethAddress of verifiedEthAddresses) {
+    //     const walletAddress = ethAddress;
+    //     const tokenContract = tipEngine.tokenContract;
+    //     const chainRPC =  tipEngine.chainId === 8453 ?
+    //                       c.env.ALCHEMY_BASE_MAINNET :
+    //                       c.env.ALCHEMY_BASE_SEPOLIA;
 
-        const data = await getBalanceOf(chainRPC, walletAddress, tokenContract);
+    //     const data = await getBalanceOf(chainRPC, walletAddress, tokenContract);
         
-        console.log(data);
+    //     console.log(data);
 
-        // if (data < minimumBalanceRequired) {
-        //   await createTipPostWithReason(false, "Sender does not have the minimum token balance required");
+    //     // if (data < minimumBalanceRequired) {
+    //     //   await createTipPostWithReason(false, "Sender does not have the minimum token balance required");
 
-        //   console.log("Sender does not have the minimum token balance required")
-        //   return new Response("Sender does not have the minimum token balance required", { status: 200 });
-        // }
-      }
-    }
+    //     //   console.log("Sender does not have the minimum token balance required")
+    //     //   return new Response("Sender does not have the minimum token balance required", { status: 200 });
+    //     // }
+    //   }
+    // }
 
     await createTipPostWithReason(true);
 
