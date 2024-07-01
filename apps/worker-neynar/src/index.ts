@@ -169,7 +169,6 @@ app.post('/cast/created', async (c) => {
 
     const createTipPostWithReason = async (approved: boolean, rejectedReason?: string) => {
       await createTipPost(db, {
-        id: bodyData.data.hash,
         providerType: "Farcaster",
         tipEngineId: tipEngine.id,
         airdropId: airdrop.id,
@@ -192,6 +191,13 @@ app.post('/cast/created', async (c) => {
 
       console.log("No daily budget found")
       return new Response("No daily budget found", { status: 200 });
+    }
+
+    if (dailyBudget === 0) {
+      await createTipPostWithReason(false, "Sender has no daily budget");
+
+      console.log("Sender has no daily budget")
+      return new Response("Sender has no daily budget", { status: 200 });
     }
 
     if (totalPointsSentToday + tipAmount > dailyBudget) {

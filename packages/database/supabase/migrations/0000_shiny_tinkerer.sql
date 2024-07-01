@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS "tip_engine" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tip_post" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"provider_type" "provider_type" NOT NULL,
 	"tip_engine_id" uuid NOT NULL,
 	"airdrop_id" uuid NOT NULL,
