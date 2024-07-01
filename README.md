@@ -8,11 +8,17 @@ Built with Turborepo.
 
 This Turborepo includes the following packages and apps:
 
-### Apps and Packages
+### Apps
 
 - `dashboard`: a [Next.js](https://nextjs.org/) app for the dashboard
 - `public-page`: a [Next.js](https://nextjs.org/) app for the airdrop claim page
 - `worker-dynamicxyz`: a [Cloudflare Worker](https://cloudflare.com/) app that connects to [Dynamic.xyz](https://dynamic.xyz/)
+- `worker-neynar`: a [Cloudflare Worker](https://cloudflare.com/) app that connects to Neynar webhooks to read new Farcaster casts
+- `worker-payfluence`: a [Cloudflare Worker](https://cloudflare.com/) app that deploys a simple Payfluence API to query the database through an authenticated route
+- `worker-daily-allowance`: a [Cloudflare Worker](https://cloudflare.com/) app that calculates daily allowance based on Farcaster reputation and post reaction stats
+- `worker-lemonsqueezy`: a [Cloudflare Worker](https://cloudflare.com/) app that connects to Lemonsqueezy to support SaaS payments (not used in final)
+
+### Packages
 - `@repo/eslint-config`: ESLint configurations used throughout the monorepo
 - `@repo/jest-presets`: Jest configurations
 - `@repo/logger`: isomorphic logger (a small wrapper around console.log)
