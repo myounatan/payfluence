@@ -74,7 +74,8 @@ tipEngineRoute.post('/setpublish/:id/:published', async (c) => {
         );
       }
 
-      const webhookCreatedData: any = await createNeynarWebhook(c.env.NEYNAR_API_KEY, c.env.PAYFLUENCE_NEYNAR_WEBHOOK_URL, tipEngine.id, tipEngine.tipString);
+      const webhookUrl: string = `${c.env.PAYFLUENCE_NEYNAR_WEBHOOK_URL}/cast/${tipEngine.id}/created`;
+      const webhookCreatedData: any = await createNeynarWebhook(c.env.NEYNAR_API_KEY, webhookUrl, tipEngine.id, tipEngine.tipString);
 
       await setTipEngineWebhook(db, tipEngine.id, webhookCreatedData.webhook.webhook_id, true, webhookCreatedData.webhook.secrets.value);
 
@@ -276,9 +277,10 @@ tipEngineRoute.post('/create', walletAuth, async (c) => {
       // error if user has no tip engine allowance
       if (tipEngineAllowance > 0) {
         // publish webhook
-        const webhookCreatedData: any = await createNeynarWebhook(c.env.NEYNAR_API_KEY, c.env.PAYFLUENCE_NEYNAR_WEBHOOK_URL, tipEngineId, bodyData.tipEngine.tipString);
+        const webhookUrl: string = `${c.env.PAYFLUENCE_NEYNAR_WEBHOOK_URL}/cast/${tipEngineId}/created`;
+        const webhookCreatedData: any = await createNeynarWebhook(c.env.NEYNAR_API_KEY, webhookUrl, tipEngineId, bodyData.tipEngine.tipString);
 
-        await setTipEngineWebhook(db, tipEngineId, webhookCreatedData.webhook.webhook_id, true, webhookCreatedData.webhook.secrets.value);
+        await setTipEngineWebhook(db, tipEngineId, webhookCreatedData.webhook.webhook_id, true, webhookCreatedData.webhook.secrets[0].value);
 
         published = true;
       }

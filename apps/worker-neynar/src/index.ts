@@ -1,6 +1,6 @@
 import { Hono, HonoRequest } from 'hono'
 
-import { AirdropParticipant, TipEngine, createAirdropParticipant, createTipPost, database, fetchDailyAllowance, getAirdropParticipantByIds, getBalanceOf, getTipEngineActiveAirdrops, getTipEngineByTipString, getTotalAmountTippedBetweenDatesForSender, getUserAccountAge, incrementAirdropParticipantPoints } from "@repo/database";
+import { AirdropParticipant, TipEngine, createAirdropParticipant, createTipPost, database, fetchDailyAllowance, getAirdropParticipantByIds, getBalanceOf, getTipEngineActiveAirdrops, getTipEngineById, getTipEngineByTipString, getTotalAmountTippedBetweenDatesForSender, getUserAccountAge, incrementAirdropParticipantPoints } from "@repo/database";
 import { CastWebhookSchema, UserType, UsersSchema } from 'types';
 import { InferType } from 'yup';
 
@@ -61,8 +61,10 @@ STEP 6) check airdrop security requirements
 STEP 7) create or update airdrop participant points
 
 */
-app.post('/cast/created', async (c) => {
+app.post('/cast/:tipEngineId/created', async (c) => {
   try {
+    const { tipEngineId } = c.req.param()
+
     // STEP 0
     const signature = c.req.header("X-Neynar-Signature");
     if (!signature) {
@@ -133,7 +135,15 @@ app.post('/cast/created', async (c) => {
 
     // STEP 4
     const db = database(c.env.DATABASE_URL);
-    const tipEngine: TipEngine = await getTipEngineByTipString(db, tipString);
+
+    const tipEngine: TipEngine = await getTipEngineById(db, tipEngineId);
+
+    if (tipEngine.tipString.toLowerCase() !== tipString.toLowerCase()) {
+      console.log('Tip string does not match tip engine')
+      return new Response("Tip string does not match tip engine", { status: 200 });
+    }
+
+    // const tipEngine: TipEngine = await getTipEngineByTipString(db, tipString);
     const activeAirdrops = await getTipEngineActiveAirdrops(db, tipEngine.id);
 
     if (activeAirdrops.length === 0) {
