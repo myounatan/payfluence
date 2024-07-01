@@ -27,8 +27,8 @@ import WarningCard from '@/components/WarningCard';
 const config = {
   relay: "https://relay.farcaster.xyz",
   rpcUrl: "https://mainnet.optimism.io",
-  siweUri: "http://example.com/login",
-  domain: "example.com",
+  siweUri: "http://tips.payfluence.io/login",
+  domain: "tips.payfluence.io",
 };
 
 function NoTipEngine() {
